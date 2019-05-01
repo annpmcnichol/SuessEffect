@@ -2,6 +2,9 @@
 
 # Get current glodap master dataset and save to a file
 
+# load libraries
+library(here)
+
 # directory for data
 datadir <- "../data/"
 
@@ -18,8 +21,8 @@ expocodes <- read.table("https://www.nodc.noaa.gov/archive/arc0107/0162565/2.2/d
 data <- read.csv(unz(temp, "GLODAPv2 Merged Master File.csv"))
 
 # write csv's to data dir
-write.csv(data, paste0(datadir, "data/GLODAPv2MergedMaster.csv"))
-write.csv(expocodes, paste0(datadir, "data/expocodes.csv"))
+write.csv(data, here("data", "GLODAPv2MergedMaster.csv"))
+write.csv(expocodes, here("data", "expocodes.csv"))
 
 # get rid of temp file
 unlink(temp)
