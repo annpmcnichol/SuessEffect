@@ -1,0 +1,19 @@
+---
+title: "Glodap DIC data"
+output: html_notebook
+---
+```{r}
+library(tidyverse)
+#library(vroom)
+library(here)
+```
+
+Working with GLODAP data...
+
+Load the data. 
+
+```{r}
+# Load using read_csv
+gv2 <- read_csv(here("data/glodapv2MMF.csv"))
+```
+
