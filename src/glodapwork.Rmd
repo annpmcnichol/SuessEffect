@@ -15,5 +15,35 @@ Load the data.
 ```{r}
 # Load using read_csv
 gv2 <- read_csv(here("data/glodapv2MMF.csv"))
+
+exp <- read_tsv(here("data/expocodes.txt"), col_names = c("cruise", "expocode"))
+
+gv2 <- inner_join(gv2, exp)
+```
+```{r}
+
+```
+
+Select just P15S
+
+```{r}
+p15s <- gv2 %>%
+  filter(expocode == "096U20160426")
+```
+
+No results = P15S isn't in GLODAP
+
+Lets try something that should be in both nosams and glodap
+```{r}
+head(gv2)
+```
+
+How about cruises that actually took 14CDIC? We should probably do a bulk conversion of "-999" values to R's "NA"...
+
+```{r}
+gv2c <- gv2 %>%
+  filter(c14 != -9999)
+
+head(gv2c)
 ```
 
