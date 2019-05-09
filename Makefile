@@ -7,7 +7,7 @@ DATA_DIR = $(RDIR)/data
 all: data
 
 $(DATA_DIR)/glodapv2MMF.csv.zip: 
-	wget -O $@ https://www.nodc.noaa.gov/archive/arc0107/0162565/2.2/data/0-data/data_product/GLODAPv2%20Merged%20Master%20File.csv.zip
+	curl https://www.nodc.noaa.gov/archive/arc0107/0162565/2.2/data/0-data/data_product/GLODAPv2%20Merged%20Master%20File.csv.zip -o $@
 
 
 $(DATA_DIR)/glodapv2MMF.csv: $(DATA_DIR)/glodapv2MMF.csv.zip
@@ -15,7 +15,7 @@ $(DATA_DIR)/glodapv2MMF.csv: $(DATA_DIR)/glodapv2MMF.csv.zip
 	mv $(DATA_DIR)/GLODAPv2\ Merged\ Master\ File.csv $@
 
 $(DATA_DIR)/expocodes.txt: 
-	wget -O $@ https://www.nodc.noaa.gov/archive/arc0107/0162565/2.2/data/0-data/data_product/EXPOCODES.txt
+	curl https://www.nodc.noaa.gov/archive/arc0107/0162565/2.2/data/0-data/data_product/EXPOCODES.txt -o @$
 
 clean:
 	rm -f $(DATA_DIR)/glodapv2MMF.csv.zip
