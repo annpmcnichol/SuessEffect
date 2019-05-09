@@ -15,7 +15,7 @@ $(DATA_DIR)/glodapv2MMF.csv: $(DATA_DIR)/glodapv2MMF.csv.zip
 	mv $(DATA_DIR)/GLODAPv2\ Merged\ Master\ File.csv $@
 
 $(DATA_DIR)/expocodes.txt: 
-	curl https://www.nodc.noaa.gov/archive/arc0107/0162565/2.2/data/0-data/data_product/EXPOCODES.txt -o @$
+	curl https://www.nodc.noaa.gov/archive/arc0107/0162565/2.2/data/0-data/data_product/EXPOCODES.txt -o $@
 
 clean:
 	rm -f $(DATA_DIR)/glodapv2MMF.csv.zip
