@@ -8,10 +8,6 @@ output: html_notebook
 library(tidyverse)
 library(here)
 
-glodap <- read_csv(here("data/glodapv2MMF.csv"))
-expcodes <- read_delim(here("data/expocodes.txt"), 
-                       delim = "\t", 
-                       col_names = c("num", "cruise"))
 nosams <- read_csv(here("data/nosams_clivar.csv"))
 ```
 
@@ -36,3 +32,8 @@ recnum_dups <- nosams %>%
   filter(N > 1) %>%
   arrange(rec_num)
 ```
+```{r}
+write_csv(field_dups, here("data/field_dups.csv"))
+write_csv(recnum_dups, here("data/recnum_dups.csv"))
+```
+
