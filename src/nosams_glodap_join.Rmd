@@ -1,0 +1,55 @@
+---
+title: "NOSAMS-GLODAP join"
+author: "Brett Longworth"
+date: "7/12/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(tidyverse)
+library(here)
+
+glodap <- read_csv(here("data/glodapv2MMF.csv"))
+expcodes <- read_delim(here("data/expocodes.txt"), 
+                       delim = "\t", 
+                       col_names = c("num", "cruise"))
+nosams <- read_csv(here("data/nosams_clivar.csv"))
+```
+```{r}
+# pick what we need from GLODAP
+glodap_dic <- glodap %>%
+  select(cruise, station, cast, year, month, day, hour, minute, 
+         latitude, longitude, bottomdepth, maxsampdepth, 
+         bottle, pressure, depth, temperature, theta, salinity,
+         oxygen, aou, phosphate, tco2, talk,
+         c13, c13f, c14, c14f, c14err) %>%
+  inner_join(expcodes, by = c("cruise" = "num")) %>%
+  rename(expocode = cruise.y)
+
+write_csv(glodap_dic, here("data/glodap_dic.csv"))
+```
+
+Let's find field duplicates for Ann. Still need to weed out ones with different rec_nums vs same
+
+```{r}
+field_dups <- nosams %>% 
+  group_by(expocode, station, cast, bottle) %>%
+  mutate(N = n()) %>%
+  filter(N > 1) %>%
+  arrange(rec_num)
+  
+```
+
+
+Join the two datasets on cruise, cast, bottle. Using a left join to retain all nosams, but we're missing a fair amount of data from GLODAP. Why?
+
+```{r}
+joined_dic <- left_join(nosams, glodap_dic, by = c("expocode", "station", "cast", "bottle"))
+str(joined_dic)
+```
+
+Let's troubleshoot
