@@ -1,0 +1,38 @@
+---
+title: "DIC duplicates"
+output: html_notebook
+---
+
+
+```{r}
+library(tidyverse)
+library(here)
+
+glodap <- read_csv(here("data/glodapv2MMF.csv"))
+expcodes <- read_delim(here("data/expocodes.txt"), 
+                       delim = "\t", 
+                       col_names = c("num", "cruise"))
+nosams <- read_csv(here("data/nosams_clivar.csv"))
+```
+
+
+Let's find field duplicates for Ann. This only takes samples that are the same bottle with different rec_nums.
+
+```{r}
+field_dups <- nosams %>% 
+  group_by(expocode, station, cast, bottle) %>%
+  mutate(N = n()) %>%
+  filter(N > 1,
+         length(unique(rec_num)) > 1) %>%
+  arrange(rec_num)
+```
+
+Why not lab dupes while we're at it? These are samples that have multiples of the same receipt number, which are presumably the same water.
+
+```{r}
+recnum_dups <- nosams %>% 
+  group_by(rec_num) %>%
+  mutate(N = n()) %>%
+  filter(N > 1) %>%
+  arrange(rec_num)
+```
