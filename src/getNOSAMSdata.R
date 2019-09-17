@@ -27,7 +27,8 @@ query <- "SELECT logged_sample.date_rec,
 		water_strip.ws_strip_date,   
 		graphite.gf_date,   
 		target.tp_date_pressed,   
-		woce_rec_num.niskin  
+		woce_rec_num.cast,
+		woce_rec_num.niskin AS bottle 
 	FROM os   
 		JOIN target ON os.tp_num = target.tp_num
 		JOIN graphite ON graphite.osg_num = target.osg_num 
