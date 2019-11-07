@@ -20,6 +20,9 @@ $(DATA_DIR)/expocodes.txt:
 $(DATA_DIR)/nosams_clivar.csv: 
 	cd src; R CMD BATCH getNOSAMSdata.R 
 
+$(DATA_DIR)/nosams_glodap.csv: 
+	cd src; R CMD BATCH joinGLODAPNOSAMS.R 
+
 clean:
 	rm -f $(DATA_DIR)/glodapv2MMF.csv.zip
 	rm -f $(DATA_DIR)/glodapv2MMF.csv
