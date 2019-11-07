@@ -1,0 +1,44 @@
+---
+title: "WOCE Ann learn"
+output: html_notebook
+editor_options: 
+  chunk_output_type: inline
+---
+
+Learning to parse data to look at field duplicates.
+
+```{r}
+library(tidyverse)
+library(here)
+
+nosams <- read_csv(here("data/nosams_clivar.csv"))
+```
+
+
+Beginning data exploration:
+
+```{r}
+str(nosams)
+```
+
+Look at comment field
+
+```{r}
+head(nosams$ws_comments)
+unique(nosams$ws_comments)
+```
+
+Summary of data fields:
+
+```{r}
+summary(nosams)
+```
+
+```{r}
+nosams <- nosams %>% mutate(d13Crr=ifelse(ws_comments == '\r', NA, ws_comments))
+```
+
+```{r}
+unique(nosams$d13Crr)
+```
+
