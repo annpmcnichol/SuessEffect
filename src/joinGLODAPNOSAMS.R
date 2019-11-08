@@ -30,4 +30,4 @@ write_csv(glodap_dic, here("data/glodap_dic.csv"))
 
 joined_dic <- left_join(nosams, glodap_dic, by = c("expocode", "station", "cast", "bottle"))
 
-write.csv(data, here("data/nosams_glodap.csv"))
+write.csv(joined_dic, here("data/nosams_glodap.csv"))

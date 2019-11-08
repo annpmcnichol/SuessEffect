@@ -21,20 +21,81 @@ library(here)
 Using a left join to retain all nosams, but we're missing a fair amount of data from GLODAP. Why?
 
 ```{r}
-joined_dic <- read_csv(here("data/nosams_glodap.csv"))
-str(joined_dic)
+colspec <- cols(
+  X1 = col_double(),
+  X1_1 = col_double(),
+  date_rec = col_date(format = ""),
+  rec_num = col_integer(),
+  collection_date = col_date(format = ""),
+  expocode = col_character(),
+  whpid = col_character(),
+  latitude.x = col_double(),
+  longitude.x = col_double(),
+  station = col_integer(),
+  depth_corr = col_double(),
+  ws_delta_c13 = col_double(),
+  gf_dc13 = col_double(),
+  f_modern = col_double(),
+  f_int_error = col_double(),
+  f_ext_error = col_double(),
+  seawater_dc14 = col_double(),
+  wheel_id = col_character(),
+  ws_num = col_integer(),
+  osg_num = col_integer(),
+  tp_num = col_integer(),
+  ws_comments = col_character(),
+  ws_strip_date = col_datetime(format = ""),
+  gf_date = col_datetime(format = ""),
+  tp_date_pressed = col_datetime(format = ""),
+  cast = col_integer(),
+  bottle = col_integer(),
+  cruise = col_integer(),
+  collection_time = col_datetime(format = ""),
+  latitude.y = col_double(),
+  longitude.y = col_double(),
+  bottomdepth = col_double(),
+  maxsampdepth = col_double(),
+  pressure = col_double(),
+  depth = col_double(),
+  temperature = col_double(),
+  theta = col_double(),
+  salinity = col_double(),
+  oxygen = col_double(),
+  aou = col_double(),
+  phosphate = col_double(),
+  tco2 = col_double(),
+  talk = col_double(),
+  c13 = col_double(),
+  c13f = col_double(),
+  c14 = col_double(),
+  c14f = col_double(),
+  c14err = col_double()
+)
+joined_dic <- read_csv(here("data/nosams_glodap.csv"), col_types = colspec, na = c("NA", "-9999"))
+skimr::skim(joined_dic)
+spec(joined_dic)
 ```
 
 Let's troubleshoot. Find the unique expocodes from both datasets and see where they overlap and where they don't.
 
 ```{r}
-summary(nosams)
+filter(joined_dic, bottle > 90)
+filter(joined_dic, f_modern < 0.1)
+
+glodap_dic <- read_csv(here("data/glodap_dic.csv"))
+
 glodap_expo <- unique(glodap_dic$expocode)
 nosams_expo <- unique(nosams$expocode)
 nosams_expo
+glodap_dic %>% filter(c14 != -9999) %>% nrow()
 ```
+There are 36541 non -9999 c14 entries in glodap, why do we only get 3411 of those in the joined dataset?
 
 ```{r}
-ggplot(joined_dic, aes(collection_time, f_modern)) +
+ggplot(joined_dic, aes(collection_date, f_modern)) +
   geom_point()
+
+ggplot(joined_dic, aes(c14, (seawater_dc14 - c14))) + geom_point()
+ggplot(joined_dic, aes(c14, (seawater_dc14 - c14))) + geom_point() + ylim(-15, 15)
+ggplot(joined_dic, aes(ws_strip_date, (seawater_dc14 - c14))) + geom_point()
 ```
