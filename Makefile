@@ -3,6 +3,7 @@
 
 RDIR = .
 DATA_DIR = $(RDIR)/data
+SRC_DIR = $(RDIR)/src
 
 all: data
 
@@ -17,11 +18,11 @@ $(DATA_DIR)/glodapv2MMF.csv: $(DATA_DIR)/glodapv2MMF.csv.zip
 $(DATA_DIR)/expocodes.txt: 
 	curl https://www.nodc.noaa.gov/archive/arc0107/0162565/2.2/data/0-data/data_product/EXPOCODES.txt -o $@
 
-$(DATA_DIR)/nosams_clivar.csv: 
-	cd src; R CMD BATCH getNOSAMSdata.R 
+$(DATA_DIR)/nosams_clivar.csv: $(SRC_DIR)/getNOSAMSdata.R
+	cd $(SRC_DIR); R CMD BATCH getNOSAMSdata.R 
 
-$(DATA_DIR)/nosams_glodap.csv: 
-	cd src; R CMD BATCH joinGLODAPNOSAMS.R 
+$(DATA_DIR)/nosams_glodap.csv: $(SRC_DIR)/joinGLODAPNOSAMS.R $(DATA_DIR)/glodapv2MMF.csv $(DATA_DIR)/expocodes.txt
+	cd $(SRC_DIR); R CMD BATCH joinGLODAPNOSAMS.R 
 
 clean:
 	rm -f $(DATA_DIR)/glodapv2MMF.csv.zip
