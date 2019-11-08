@@ -27,9 +27,7 @@ clean:
 	rm -f $(DATA_DIR)/glodapv2MMF.csv.zip
 	rm -f $(DATA_DIR)/glodapv2MMF.csv
 	rm -f $(DATA_DIR)/expocodes.txt
-	rm -f $(DATA_DIR)/nosams_clivar.csv
+	rm -f $(DATA_DIR)/nosams_clivar.csv 
+	rm -f $(DATA_DIR)/nosams_glodap.csv
 
-data:
-	$(DATA_DIR)/expocodes.txt
-	$(DATA_DIR)/glodapv2MMF.csv
-	$(DATA_DIR)/nosams_clivar.csv
+data: $(DATA_DIR)/expocodes.txt $(DATA_DIR)/glodapv2MMF.csv $(DATA_DIR)/nosams_clivar.csv $(DATA_DIR)/nosams_glodap.csv
