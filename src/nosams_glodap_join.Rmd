@@ -9,47 +9,32 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+Joining the GLODAP and NOSAMS data now takes place in joinNOSAMSGLODAP.R. This file is now primarily for investigating the joined data and making sure the join makes sense.
+
+
 ```{r}
 library(tidyverse)
+library(lubridate)
 library(here)
-
-glodap <- read_csv(here("data/glodapv2MMF.csv"))
-expcodes <- read_delim(here("data/expocodes.txt"), 
-                       delim = "\t", 
-                       col_names = c("num", "cruise"))
-nosams <- read_csv(here("data/nosams_clivar.csv"))
-```
-```{r}
-# pick what we need from GLODAP
-glodap_dic <- glodap %>%
-  select(cruise, station, cast, year, month, day, hour, minute, 
-         latitude, longitude, bottomdepth, maxsampdepth, 
-         bottle, pressure, depth, temperature, theta, salinity,
-         oxygen, aou, phosphate, tco2, talk,
-         c13, c13f, c14, c14f, c14err) %>%
-  inner_join(expcodes, by = c("cruise" = "num")) %>%
-  rename(expocode = cruise.y)
-
-write_csv(glodap_dic, here("data/glodap_dic.csv"))
 ```
 
-Let's find field duplicates for Ann. Still need to weed out ones with different rec_nums vs same
+Using a left join to retain all nosams, but we're missing a fair amount of data from GLODAP. Why?
 
 ```{r}
-field_dups <- nosams %>% 
-  group_by(expocode, station, cast, bottle) %>%
-  mutate(N = n()) %>%
-  filter(N > 1) %>%
-  arrange(rec_num)
-  
-```
-
-
-Join the two datasets on cruise, cast, bottle. Using a left join to retain all nosams, but we're missing a fair amount of data from GLODAP. Why?
-
-```{r}
-joined_dic <- left_join(nosams, glodap_dic, by = c("expocode", "station", "cast", "bottle"))
+joined_dic <- read_csv(here("data/nosams_glodap.csv"))
 str(joined_dic)
 ```
 
-Let's troubleshoot
+Let's troubleshoot. Find the unique expocodes from both datasets and see where they overlap and where they don't.
+
+```{r}
+summary(nosams)
+glodap_expo <- unique(glodap_dic$expocode)
+nosams_expo <- unique(nosams$expocode)
+nosams_expo
+```
+
+```{r}
+ggplot(joined_dic, aes(collection_time, f_modern)) +
+  geom_point()
+```

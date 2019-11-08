@@ -1,6 +1,8 @@
 #!/usr/bin/R
 
 # Get current glodap master dataset and save to a file
+# This is now done by the project makefile using shell
+# Script left here for example of how to do this in R
 
 # load libraries
 library(here)
