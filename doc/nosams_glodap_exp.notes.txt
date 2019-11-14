@@ -1,0 +1,15 @@
+Notes for converting NOSAMS expocodes to GLODAP
+
+Often NOSAMS codes are "short names" not in the 12 digit GLODAP format. I converted these using the search at https://cchdo.ucsd.edu/cruise. Results are in data/nosams_glodap_exp.csv. Questions are below.
+
+In NOSAMS, but not in GLODAP or CCHDO: 3206NBP/13
+
+In NOSAMS and CCHDO, but not in GLODAP:
+
+18DD9403/1 and /2: Are these both coded as 18DD19940906?
+316N138/3 /4 /5: Are these both coded as 316N19920502
+316N145/14 /15: Are these both coded as 316N19951202
+No Melville after 18M20040615
+31DSCGC91/1,31DSCGC91/2: combined as 31DS19910216? CCHDO start date listed as 19910214
+49MR99K05/1,49MR99K05/2: combined as 49NZ19990823? Different ship id, CCHDO start listed as 19990824
+,49NZ19990823
