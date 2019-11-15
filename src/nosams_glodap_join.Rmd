@@ -17,6 +17,8 @@ library(tidyverse)
 library(lubridate)
 library(here)
 library(skimr)
+library(amstools)
+library(odbc)
 ```
 
 
@@ -58,65 +60,13 @@ skim(glodap_dic)
 # load nosams
 nosams_dic <- read_csv(here("data/nosams_clivar.csv"))
 skim(nosams_dic)
-
 ```
 
 Using a left join to retain all nosams, but we're missing a fair amount of data from GLODAP. Why?
 
 ```{r}
-colspec <- cols(
-  X1 = col_double(),
-  X1_1 = col_double(),
-  date_rec = col_date(format = ""),
-  rec_num = col_integer(),
-  collection_date = col_date(format = ""),
-  expocode = col_character(),
-  whpid = col_character(),
-  latitude.x = col_double(),
-  longitude.x = col_double(),
-  station = col_integer(),
-  depth_corr = col_double(),
-  ws_delta_c13 = col_double(),
-  gf_dc13 = col_double(),
-  f_modern = col_double(),
-  f_int_error = col_double(),
-  f_ext_error = col_double(),
-  seawater_dc14 = col_double(),
-  wheel_id = col_character(),
-  ws_num = col_integer(),
-  osg_num = col_integer(),
-  tp_num = col_integer(),
-  ws_comments = col_character(),
-  ws_strip_date = col_datetime(format = ""),
-  gf_date = col_datetime(format = ""),
-  tp_date_pressed = col_datetime(format = ""),
-  cast = col_integer(),
-  bottle = col_integer(),
-  cruise = col_integer(),
-  collection_time = col_datetime(format = ""),
-  latitude.y = col_double(),
-  longitude.y = col_double(),
-  bottomdepth = col_double(),
-  maxsampdepth = col_double(),
-  pressure = col_double(),
-  depth = col_double(),
-  temperature = col_double(),
-  theta = col_double(),
-  salinity = col_double(),
-  oxygen = col_double(),
-  aou = col_double(),
-  phosphate = col_double(),
-  tco2 = col_double(),
-  talk = col_double(),
-  c13 = col_double(),
-  c13f = col_double(),
-  c14 = col_double(),
-  c14f = col_double(),
-  c14err = col_double()
-)
-joined_dic <- read_csv(here("data/nosams_glodap.csv"), col_types = colspec, na = c("NA", "-9999"))
-skimr::skim(joined_dic)
-spec(joined_dic)
+joined_dic <- read_csv(here("data/nosams_glodap.csv"))
+skim(joined_dic)
 ```
 
 Let's troubleshoot. Find the unique expocodes from both datasets and see where they overlap and where they don't.
@@ -124,22 +74,53 @@ Let's troubleshoot. Find the unique expocodes from both datasets and see where t
 ```{r}
 filter(joined_dic, bottle > 90)
 filter(joined_dic, f_modern < 0.1)
-
-
-glodap_expo <- unique(glodap_dic$expocode)
-nosams_expo <- unique(nosams$expocode)
-union(glodap_expo, nosams_expo) %>% sort()
-intersect(glodap_expo, nosams_expo)
-setdiff(glodap_expo, nosams_expo) %>% sort()
-setdiff(nosams_expo, glodap_expo)
-intersect(expcodes$cruise, nosams_expo)
-nosexp <- dbGetQuery(con, "SELECT DISTINCT expocode FROM woce_loc")
-intersect(expcodes$cruise, nosexp$expocode)
 ```
+
+```{r}
+# expocodes in glodap
+glodap_expo <- unique(glodap_dic$expocode)
+# nosams expocodes
+nosams_expo <- unique(nosams_dic$expocode)
+# glodap expocodes in nosams, after conversion from NOSAMS codes
+nosams_glo_expo <- unique(nosams_dic$glodap)
+
+# expocodes in both datasets
+intersect(glodap_expo, nosams_glo_expo) %>% sort()
+```
+
+Expocodes in NOSAMS that aren't in GLODAP
+
+```{r}
+setdiff(nosams_glo_expo, glodap_expo) %>% sort()
+```
+
+Mostly really recent, so that makes sense.
+
+
+Expocodes in GLODAP that aren't in NOSAMS 
+
+```{r}
+setdiff(glodap_expo, nosams_glo_expo) %>% sort()
+```
+
+Compare this to expocodes in GLODAP that don't match any (converted) NOSAMS expocodes in our DB.
+
+```{r}
+# expocodes in db
+con <- conNOSAMS()
+nos_exp_db <- dbGetQuery(con, "SELECT DISTINCT expocode FROM woce_loc")
+nrow(nos_exp_db)
+
+setdiff(glodap_expo, nosams_glo_expo) %>% sort()
+```
+
+## Create an expocode conversion file
 
 OK, it's clear nosams expocodes are fubar. Let's make a conversion table and edit it manually...
 
-```{r}
+No need to run this. Already done.
+
+```{}
 nosams_glodap_exp <- setdiff(nosams_expo, glodap_expo) %>% 
   sort() %>% 
   cbind("nosams" = ., "glodap" = "") %>% 
@@ -148,40 +129,43 @@ nosams_glodap_exp <- setdiff(nosams_expo, glodap_expo) %>%
 write_csv(nosams_glodap_exp, here("data/nosams_glodap_exp.csv"))
 ```
 
-Lets try some web scraping for matches
+```{}
+# format this into a tibble
+nos_exp_db <- nos_exp_db %>%
+  mutate(nosams = trimws(expocode)) %>%
+  select(nosams) %>%
+  cbind(., "glodap" = "") %>% 
+  as_tibble()
 
-```{r}
-library(rvest)
+# current conversion file
+nos_glo_exp <- read_csv(here("doc/nosams_glodap_exp.csv"))
 
-# I know this one works
-url <- "https://cchdo.ucsd.edu/search?q=ANDREX"
+# add this to the previously created conversion file.
+nos_glo_exp_full <- rbind(nos_glo_exp, nos_exp_db) %>% 
+  distinct(nosams, .keep_all = TRUE) %>% 
+  arrange(nosams)
 
-webpage <- read_html(url)
-webpage %>%
-  html_nodes("search_results") 
+write_csv(nos_glo_exp_full, here("doc/nosams_glodap_exp.csv"))
 ```
 
-There are 36541 non -9999 c14 entries in glodap, why do we only get 3411 of those in the joined dataset?
+# Plots
 
 ```{r}
 ggplot(joined_dic, aes(collection_date, f_modern)) +
-  geom_point()
+  geom_point() +
+  xlim(as.Date(c('1972-01-01', '2020-01-01'), format="%Y-%m-%d") )
 
-ggplot(joined_dic, aes(ws_strip_date, (seawater_dc14 - c14))) + geom_point()
+ggplot(glodap_dic, aes(as.Date(collection_time), c14)) +
+  geom_point() +
+  xlim(as.Date(c('1972-01-01', '2020-01-01'), format="%Y-%m-%d") )
+
+ggplot(joined_dic, aes(collection_date, c14)) +
+  geom_point() +
+  xlim(as.Date(c('1972-01-01', '2020-01-01'), format="%Y-%m-%d") )
+
+ggplot(joined_dic, aes(collection_date, (seawater_dc14 - c14))) + 
+  geom_point() +
+  xlim(as.Date(c('1972-01-01', '2020-01-01'), format="%Y-%m-%d") )
 ```
 
-What if we join by collection date?
-
-```{r}
-
-# try joining by collection date instead of expocode
-glodap_dic$collection_date <- as.Date(glodap_dic$collection_time)
-joined_dic_coldate <- inner_join(nosams, glodap_dic, by = c("collection_date", "station", "cast", "bottle"))
-```
-
-This gets us 16925 matches... progress?
-```{r}
-
-ggplot(joined_dic_coldate, aes(ws_strip_date, (seawater_dc14 - c14))) + geom_point()
-```
 
