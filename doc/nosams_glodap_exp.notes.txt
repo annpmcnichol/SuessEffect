@@ -1,15 +1,24 @@
 Notes for converting NOSAMS expocodes to GLODAP
+Brett Longworth, blongworth@whoi.edu
 
-Often NOSAMS codes are "short names" not in the 12 digit GLODAP format. I converted these using the search at https://cchdo.ucsd.edu/cruise. Results are in data/nosams_glodap_exp.csv. Questions are below.
+Often NOSAMS codes are "short names" not in the 12 digit GLODAP format. I
+converted these using the search at https://cchdo.ucsd.edu/cruise. Some cruises
+were converted using searches of other cruise databases. Results are in
+data/nosams_glodap_exp.csv. Questions are below. The list of issues isn't
+complete.
 
-In NOSAMS, but not in GLODAP or CCHDO: 3206NBP/13
+In NOSAMS, but not in GLODAP or CCHDO: 3206NBP/13, RITS91, RITS93
 
 In NOSAMS and CCHDO, but not in GLODAP:
 
 18DD9403/1 and /2: Are these both coded as 18DD19940906?
 316N138/3 /4 /5: Are these both coded as 316N19920502
 316N145/14 /15: Are these both coded as 316N19951202
-No Melville after 18M20040615
+31DSCG96/1 /2: Are these both coded as 31DS19960105
+31DSCGC94/2 /3: Are these both coded as 31DS19940126
+3220CGC92/0, /1, /2: Are these all coded as 322019920816. Also different start date in GLODAP
+RITS91/1, /2L Are these both 31DS19910216. Different start date in WOD, not in CCHDO.
+No Melville in GLODAP after 18M2004061dfkjlsadf
+No Knorr after in GLODAP 316N20031023
 31DSCGC91/1,31DSCGC91/2: combined as 31DS19910216? CCHDO start date listed as 19910214
 49MR99K05/1,49MR99K05/2: combined as 49NZ19990823? Different ship id, CCHDO start listed as 19990824
-,49NZ19990823
