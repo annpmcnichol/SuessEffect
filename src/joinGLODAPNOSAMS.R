@@ -109,7 +109,9 @@ colspec <- cols(
   chlaf = col_double()
 )
 
-glodap <- read_csv(here("data/glodapv2MMF.csv"), col_types = colspec, na = c("NA", "-9999"))
+glodap <- read_csv(here("data/glodapv2MMF.csv"), 
+                   col_types = colspec, 
+                   na = c("NA", "-9999"))
 expcodes <- read_delim(here("data/expocodes.txt"), 
                        delim = "\t", 
                        col_names = c("num", "cruise"))
@@ -134,6 +136,6 @@ write_csv(glodap_dic, here("data/glodap_dic.csv"))
 # Using a left join to retain all nosams, but we're missing a 
 # fair amount of data from GLODAP. Why?
 
-joined_dic <- left_join(nosams, glodap_dic, by = c("expocode", "station", "cast", "bottle"))
+joined_dic <- left_join(nosams, glodap_dic, by = c("glodap" = "expocode", "station", "cast", "bottle"))
 
 write.csv(joined_dic, here("data/nosams_glodap.csv"))

@@ -3,6 +3,8 @@
 library(odbc)
 library(amstools)
 library(here)
+library(readr)
+library(dplyr)
 
 query <- "SELECT logged_sample.date_rec,   
 		woce_rec_num.rec_num,   
@@ -46,5 +48,8 @@ query <- "SELECT logged_sample.date_rec,
 con <- conNOSAMS()
 
 data <- dbGetQuery(con, query)
+# Join nosams data to add GLODAP expocodes
+nosexp <- read_csv(here("doc/nosams_glodap_exp.csv"))
+data <- left_join(data, nosexp, by = c("expocode" = "nosams"))
 write.csv(data, here("data/nosams_clivar.csv"))
 
