@@ -153,19 +153,24 @@ write_csv(nos_glo_exp_full, here("doc/nosams_glodap_exp.csv"))
 ```{r}
 ggplot(joined_dic, aes(collection_date, f_modern)) +
   geom_point() +
-  xlim(as.Date(c('1972-01-01', '2020-01-01'), format="%Y-%m-%d") )
+  xlim(as.Date(c('1972-01-01', '2020-01-01'), format="%Y-%m-%d") ) +
+  ggtitle("Measurements in NOSAMS")
 
 ggplot(glodap_dic, aes(as.Date(collection_time), c14)) +
   geom_point() +
-  xlim(as.Date(c('1972-01-01', '2020-01-01'), format="%Y-%m-%d") )
+  xlim(as.Date(c('1972-01-01', '2020-01-01'), format="%Y-%m-%d") ) +
+  ggtitle("Measurements in GLODAP")
 
 ggplot(joined_dic, aes(collection_date, c14)) +
   geom_point() +
-  xlim(as.Date(c('1972-01-01', '2020-01-01'), format="%Y-%m-%d") )
+  xlim(as.Date(c('1972-01-01', '2020-01-01'), format="%Y-%m-%d") ) +
+  ggtitle("GLODAP measurements also in NOSAMS")
 
-ggplot(joined_dic, aes(collection_date, (seawater_dc14 - c14))) + 
+ggplot(joined_dic, aes(collection_date, (d14c(f_modern, year(collection_date)) - c14))) + 
   geom_point() +
-  xlim(as.Date(c('1972-01-01', '2020-01-01'), format="%Y-%m-%d") )
+  xlim(as.Date(c('1972-01-01', '2020-01-01'), format="%Y-%m-%d") ) +
+  ggtitle("Measurements in NOSAMS and GLODAP (difference)",
+          subtitle = "Can't calc d14C if no collection year")
 ```
 
 
