@@ -1,0 +1,58 @@
+---
+title: "Hydrographic Station Reoccupations"
+output: html_notebook
+---
+
+Find nearby stations that sample the same spot over time.
+
+```{r}
+library(tidyverse)
+library(here)
+library(nngeo)
+```
+
+Load data. Working with GLODAP initially. 
+
+```{r}
+glodap <- read_csv(here("data/glodap_dic.csv"))
+
+# Make it spatial
+glodap_sp <- as.data.frame(glodap) %>%
+  st_as_sf(coords = c("longitude", "latitude"), crs = 4326 )
+
+# Aaand let's take a look
+# view!
+library(rnaturalearth)
+library(rnaturalearthdata)
+library(rgeos)
+world <- ne_countries(scale = "medium", returnclass = "sf")
+
+plot(glodap_sp$geometry, pch=16, cex=0.2, col="gray50")
+plot(world$geometry, add=T)
+title("GLODAP Stations")
+
+theme_set(theme_bw())
+ggplot(data = world) +
+  geom_sf(data = glodap_sp, size = .1) +
+    geom_sf()
+
+```
+
+Find distances to neighbor stations, 
+```{r}
+# First just use top sample of every station
+  glodap_stations <- glodap_sp %>%
+  group_by(expocode, station) %>%
+  slice(which.min(depth))
+
+# Another way to do the same (first is quicker)
+glodap_stations <- glodap_sp %>%
+  group_by(expocode, station) %>%
+  filter(rank(depth, ties.method="first")==1)
+
+# Find nearest stations
+nearest_stations <- st_nn(glodap_stations, glodap_stations, returnDist = T, k = 5, maxdist = 50000, progress = TRUE)
+
+```
+
+
