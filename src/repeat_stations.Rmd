@@ -132,10 +132,6 @@ OK, let's try just parsing out the identity and same cruise stations from the in
 ```{r}
 str(nearest_stations)
 
-nearest_stations$nn[[188]]
-
-nn <- glodap_stations[c(188, 2635),]
-nn <- glodap_stations[nearest_stations$nn[[433]],]
 
 # what lines of nearest_stations are interesting? Make a series of extractions and plots for the interesting ones.
 
@@ -150,16 +146,33 @@ neighbor_stations <- nearest_stations$nn %>%
 
 str(neighbor_stations)
 glodap_nearby_stations <- glodap_stations[c(neighbor_stations),]
+
+# Plot all stations that are close to other stations
 ggplot(data = world) +
   geom_sf(data = glodap_nearby_stations, aes(color = expocode), size = .5) +
   geom_sf() +
   theme(legend.position = "none") 
-  coord_sf(xlim = c(-120, -70), ylim = c(-30, -40), expand = FALSE)
+
+# zoom in
+ggplot(data = world) +
+  geom_sf(data = glodap_nearby_stations, aes(color = expocode), size = .5) +
+  geom_sf() +
+  theme(legend.position = "none") +
+  coord_sf(xlim = c(-104, -102), ylim = c(-16, -18), expand = FALSE)
 
 # Works, except we're still capturing nearest stations from the same cruise.
 # Maybe we can map() keep() to check whether the nearby stations for each station are from the same year or cruise
 
-dup <- cbind(glodap_stations, nearest_stations$nn)
+```
+
+
+Investigate a couple of specific locations
+
+```{r}
+nearest_stations$nn[[188]]
+
+nn <- glodap_stations[c(188, 2635),]
+nn <- glodap_stations[nearest_stations$nn[[433]],]
 # filter rows for full matching stations from glodap data
 # Plot profiles for these stations
 # join all these little data sets and plot globally to pick interesting overlap points
