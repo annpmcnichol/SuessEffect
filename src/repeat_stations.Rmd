@@ -49,6 +49,8 @@ glodap_stations <- glodap_sp %>%
 
 # Find nearest stations
 nearest_stations <- st_nn(glodap_stations, glodap_stations, returnDist = T, k = 5, maxdist = 50000, progress = TRUE)
+
+write_rds(nearest_stations, here("data/nearest_stations.rds"))
 ```
 
 OK, we've got a list that has 1. A list of stations by row in glodap_stations, each with a list of the 5 nearest stations. 2. A matrix of stations with the distances to the 5 nearest. 
@@ -142,7 +144,18 @@ neighbor_stations <- nearest_stations$nn %>%
   flatten_int() %>%
   unique()
 
-# Well, that works, but we've lost our indexes. But wait, we can just flatten this list and keep all the rows of glodap_stations for our plot!
+# how do we tell if elements of nn are from the same cruise as their row?
+glodap_stations[1,]$cruise #cruise of the row
+glodap_stations[nearest_stations$nn[[1]],]$cruise #cruises of the elements
+
+# for element in row, drop element if element cruise == row cruise
+
+# returns vector of stations without stations not on the same cruise as row index
+nearest_stations$nn[[188]][glodap_stations[188,]$cruise != glodap_stations[nearest_stations$nn[[188]],]$cruise]
+
+
+
+# Well, that works, but we've lost our But wait, we can just flatten this list and keep all the rows of glodap_stations for our plot!
 
 str(neighbor_stations)
 glodap_nearby_stations <- glodap_stations[c(neighbor_stations),]
