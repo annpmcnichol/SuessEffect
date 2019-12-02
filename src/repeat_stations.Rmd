@@ -1,6 +1,8 @@
 ---
 title: "Hydrographic Station Reoccupations"
-output: html_notebook
+output:
+  html_document:
+    df_print: paged
 ---
 
 Find nearby stations that sample the same spot over time.
@@ -38,17 +40,21 @@ Find distances to neighbor stations,
 
 ```{r}
 # First just use top sample of every station
-  glodap_stations <- glodap_sp %>%
+glodap_stations <- glodap_sp %>%
   group_by(expocode, station) %>%
   slice(which.min(depth))
 
 # Another way to do the same (first is quicker)
-glodap_stations <- glodap_sp %>%
-  group_by(expocode, station) %>%
-  filter(rank(depth, ties.method="first")==1)
+#glodap_stations <- glodap_sp %>%
+#  group_by(expocode, station) %>%
+#  filter(rank(depth, ties.method="first")==1)
 
 # Find nearest stations
-nearest_stations <- st_nn(glodap_stations, glodap_stations, returnDist = T, k = 5, maxdist = 50000, progress = TRUE)
+nearest_stations <- st_nn(glodap_stations, glodap_stations, 
+                          returnDist = T, k = 5, 
+                          maxdist = 50000, progress = TRUE)
+
+str(nearest_stations)
 
 write_rds(nearest_stations, here("data/nearest_stations.rds"))
 ```
@@ -60,9 +66,80 @@ Closest station is always itself with a distance of 0. =P Fix this one by droppi
 
 Most common closest stations are nearby stations on the same cruise. Fix by only finding distances to stations on different cruises. This still has the problem of finding multiple stations from the same cruise as the closest to a given station.
 
-If we do these before using st_nn(), we'll have to run a separate st_nn() for every station. This also has problems with indexing due to the list of stations to find distance to is different for every station.
+OK, let's try just parsing out the identity and same cruise stations from the initial spatial join. We can also try and remove multiple nearest stations from the same subsequent cruise. We'll need more nearest entries to make this work properly.
 
 ```{r}
+# Drop self matches
+neighbor_stations <- nearest_stations$nn %>% 
+  discard(~ length(.x) == 1) %>%
+  flatten_int() %>%
+  unique() %>%
+  sort()
+
+# returns vector of stations without stations not on the same cruise as row index
+clst <- function(row) {
+  nearest_stations$nn[[row]][glodap_stations[row,]$cruise != glodap_stations[nearest_stations$nn[[row]],]$cruise]
+}
+
+neighbor_stations2 <- map(seq_along(nearest_stations$nn), clst) %>%
+  flatten_int() %>%
+  unique() %>%
+  sort()
+
+# Looks like we're doing OK with this
+setdiff(neighbor_stations, neighbor_stations2)
+
+# Use this to select rows that have nearby neighbors
+glodap_nearby_stations <- glodap_stations[c(neighbor_stations2),]
+
+# Plot all stations that are close to other stations
+ggplot(data = world) +
+  geom_sf(data = glodap_nearby_stations, aes(color = expocode), size = .5) +
+  geom_sf() +
+  theme(legend.position = "none") 
+
+# zoom in
+ggplot(data = world) +
+  geom_sf(data = glodap_nearby_stations, aes(color = expocode), size = .5) +
+  geom_sf() +
+  theme(legend.position = "none") +
+  coord_sf(xlim = c(-104, -102), ylim = c(-16, -18), expand = FALSE)
+
+# Works, except we're still capturing nearest stations from the same cruise.
+# Maybe we can map() keep() to check whether the nearby stations for each station are from the same year or cruise
+```
+
+
+Investigate a couple of specific locations
+
+```{r}
+nearest_stations$nn[[188]]
+
+nn <- glodap_stations[c(188, 2635),]
+nn <- glodap_stations[nearest_stations$nn[[433]],]
+# filter rows for full matching stations from glodap data
+# Plot profiles for these stations
+# join all these little data sets and plot globally to pick interesting overlap points
+nn
+# Plot
+ggplot(data = world) +
+  geom_sf(data = nn, aes(color = expocode), size = 1) +
+  geom_sf() +
+  theme(legend.position = "none") +
+  coord_sf(xlim = c(-80, -70), ylim = c(-30, -40), expand = FALSE)
+
+# generalize
+getnearest <- function(station) {
+  glodap_stations[c(station, all_nearest[[station]]$nn[[1]][[1]]),]
+}
+```
+
+
+### Unused code
+
+If we do these before using st_nn(), we'll have to run a separate st_nn() for every station. This also has problems with indexing due to the list of stations to find distance to is different for every station.
+
+```{}
 # Same, also not including stns from same cruise. Only have to not do same cruise because identity is part of the same cruise. Duh. 
 nearest_st <- st_nn(glodap_stations[1,], 
                           glodap_stations[glodap_stations$cruise != glodap_stations$cruise[1],],
@@ -90,11 +167,9 @@ str(all_nearest, max.level = 1)
 str(all_nearest[[49]]$nn)
 ```
 
-
-
 Now parse this list of lists of lists and vectors.
 
-```{r}
+```{}
 # list of nearest stations for one station
 all_nearest[[49]]
 
@@ -128,89 +203,3 @@ ggplot(data = world) +
   geom_sf(data = glo49, size = 2) +
   geom_sf() 
 ```
-
-OK, let's try just parsing out the identity and same cruise stations from the initial spatial join. We can also try and remove multiple nearest stations from the same subsequent cruise. We'll need more nearest entries to make this work properly.
-
-```{r}
-str(nearest_stations)
-
-
-# what lines of nearest_stations are interesting? Make a series of extractions and plots for the interesting ones.
-
-# interesting = same space, different time (different cruise), more than one repeat
-# easy- length > 1
-neighbor_stations <- nearest_stations$nn %>% 
-  discard(~ length(.x) == 1) %>%
-  flatten_int() %>%
-  unique() %>%
-  sort()
-
-# how do we tell if elements of nn are from the same cruise as their row?
-glodap_stations[1,]$cruise #cruise of the row
-glodap_stations[nearest_stations$nn[[1]],]$cruise #cruises of the elements
-
-# for element in row, drop element if element cruise == row cruise
-
-
-# returns vector of stations without stations not on the same cruise as row index
-clst <- function(row) {
-  nearest_stations$nn[[row]][glodap_stations[row,]$cruise != glodap_stations[nearest_stations$nn[[row]],]$cruise]
-}
-
-neighbor_stations2 <- map(seq_along(nearest_stations$nn), clst) %>%
-  flatten_int() %>%
-  unique() %>%
-  sort()
-
-setdiff(neighbor_stations, neighbor_stations2)
-# Well, that works, but we've lost our But wait, we can just flatten this list and keep all the rows of glodap_stations for our plot!
-
-str(neighbor_stations)
-glodap_nearby_stations <- glodap_stations[c(neighbor_stations2),]
-
-# Plot all stations that are close to other stations
-ggplot(data = world) +
-  geom_sf(data = glodap_nearby_stations, aes(color = expocode), size = .5) +
-  geom_sf() +
-  theme(legend.position = "none") 
-
-# zoom in
-ggplot(data = world) +
-  geom_sf(data = glodap_nearby_stations, aes(color = expocode), size = .5) +
-  geom_sf() +
-  theme(legend.position = "none") +
-  coord_sf(xlim = c(-104, -102), ylim = c(-16, -18), expand = FALSE)
-
-# Works, except we're still capturing nearest stations from the same cruise.
-# Maybe we can map() keep() to check whether the nearby stations for each station are from the same year or cruise
-
-```
-
-
-Investigate a couple of specific locations
-
-```{r}
-nearest_stations$nn[[188]]
-
-nn <- glodap_stations[c(188, 2635),]
-nn <- glodap_stations[nearest_stations$nn[[433]],]
-# filter rows for full matching stations from glodap data
-# Plot profiles for these stations
-# join all these little data sets and plot globally to pick interesting overlap points
-nn
-# Plot
-ggplot(data = world) +
-  geom_sf(data = nn, aes(color = expocode), size = 1) +
-  geom_sf() +
-  theme(legend.position = "none") +
-  coord_sf(xlim = c(-80, -70), ylim = c(-30, -40), expand = FALSE)
-
-# generalize
-getnearest <- function(station) {
-  glodap_stations[c(station, all_nearest[[station]]$nn[[1]][[1]]),]
-}
-# Remove matches that are from the same cruise as the index.
-
-```
-
-
