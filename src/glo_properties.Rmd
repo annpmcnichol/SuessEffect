@@ -1,0 +1,77 @@
+---
+title: "Property_Property_GLODAP"
+author: "Ann McNichol"
+date: "12/5/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(tidyverse)
+library(here)
+
+glo_dat <- read_csv(here("data/glodap_dic.csv"))
+nos_glo_dat <- read_csv(here("data/nosams_glodap.csv"))
+```
+
+```{r}
+ggplot(glo_dat, aes(phosphate, c13, color = depth)) +
+  geom_point()
+```
+ˆ
+```{r}
+glo_dat %>% 
+  filter(depth > 2000) %>%
+  ggplot(aes(phosphate, c13, color = depth)) +
+  geom_point()
+```
+
+```{r}
+glo_dat %>% 
+  filter(depth > 2000) %>%
+  ggplot(aes(phosphate, c13, color = latitude)) +
+  geom_point()
+```
+
+```{r}
+glo_dat %>% 
+  filter(depth > 2000) %>%
+  ggplot(aes(phosphate, c13, color = longitude)) +
+  geom_point()
+```
+
+```{r}
+nos_glo_dat %>% 
+  filter(depth > 2000) %>%
+  ggplot(aes(phosphate, c13, color = longitude.x)) +
+  geom_point()
+```
+
+```{r}
+
+library(sf)
+library(nngeo)
+library(rnaturalearth)
+library(rnaturalearthdata)
+library(rgeos)
+
+
+# set ggplot theme
+theme_set(theme_bw())
+```
+
+Map it.
+
+```{r}
+# Make it spatial
+glodap_sp <- as.data.frame(glodap) %>%
+  st_as_sf(coords = c("longitude", "latitude"), crs = 4326 )
+
+# Aaand let's take a look
+world <- ne_countries(scale = "medium", returnclass = "sf")
+ggplot(data = world) +
+  geom_sf(data = glodap_sp, size = .1) +
+  geom_sf()
