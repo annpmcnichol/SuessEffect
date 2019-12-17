@@ -1,6 +1,8 @@
 ---
 title: "DIC duplicates"
-output: html_notebook
+output:
+  html_document:
+    df_print: paged
 ---
 
 
@@ -35,5 +37,14 @@ recnum_dups <- nosams %>%
 ```{r}
 write_csv(field_dups, here("data/field_dups.csv"))
 write_csv(recnum_dups, here("data/recnum_dups.csv"))
+```
+```{r}
+field_dups<- read_csv(here("data/field_dups.csv"))
+ggplot(field_dups, aes(collection_date, f_modern)) +
+  geom_point()
+
+field_dups %>% filter(is.na(collection_date))
+field_dups %>% filter(is.na(f_modern))
+nosams %>% filter(collection_date > "1/1/1994", collection_date < "1/1/2005") %>% view()
 ```
 
