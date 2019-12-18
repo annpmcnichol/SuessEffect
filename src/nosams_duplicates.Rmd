@@ -48,3 +48,12 @@ field_dups %>% filter(is.na(f_modern))
 nosams %>% filter(collection_date > "1/1/1994", collection_date < "1/1/2005") %>% view()
 ```
 
+```{r}
+
+nosams <- read_csv(here("data/ann_jul_17_QA_R.csv"))
+```
+
+```{r}
+library(ggplot2)
+```
+
