@@ -1,0 +1,31 @@
+---
+title: "NOSAMS_secondaries"
+author: "Ann McNichol"
+date: "12/18/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r}
+setwd("/Users/ann/github/SuessEffect")
+```
+# load libraries and data
+```{r}
+setwd("/Users/ann/github/SuessEffect")
+
+library(tidyverse)
+
+nosams <- read_csv("data/ann_jul_17_QA_R.csv")
+
+```
+# boxplot of 13C data for secondaries
+```{r}
+d13C_box <- ggplot(nosams, aes(x = as.factor(RN2), y = d13C_1)) +
+  geom_boxplot()
+d13C_box
+```
+
