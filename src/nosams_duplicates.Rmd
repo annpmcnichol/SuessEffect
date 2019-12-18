@@ -34,6 +34,8 @@ recnum_dups <- nosams %>%
   filter(N > 1) %>%
   arrange(rec_num)
 ```
+
+
 ```{r}
 write_csv(field_dups, here("data/field_dups.csv"))
 write_csv(recnum_dups, here("data/recnum_dups.csv"))
