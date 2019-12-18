@@ -2,13 +2,15 @@
 title: "Property_Property_GLODAP"
 author: "Ann McNichol"
 date: "12/5/2019"
-output: html_document
+output:
+  html_document: default
+  pdf_document: default
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
-
+Load Libraries and data sets
 ```{r}
 library(tidyverse)
 library(here)
@@ -16,41 +18,62 @@ library(here)
 glo_dat <- read_csv(here("data/glodap_dic.csv"))
 nos_glo_dat <- read_csv(here("data/nosams_glodap.csv"))
 ```
-
+Plot d13C vs PO4 for full GLODAP data set
 ```{r}
 ggplot(glo_dat, aes(phosphate, c13, color = depth)) +
   geom_point()
 ```
-ˆ
+Plot d13C vs PO4 for GLODAP deeper than 2000 m; depth
 ```{r}
 glo_dat %>% 
   filter(depth > 2000) %>%
   ggplot(aes(phosphate, c13, color = depth)) +
   geom_point()
 ```
-
+Ditto; latitude
 ```{r}
 glo_dat %>% 
   filter(depth > 2000) %>%
   ggplot(aes(phosphate, c13, color = latitude)) +
   geom_point()
 ```
-
+Ditto; longitude
 ```{r}
 glo_dat %>% 
   filter(depth > 2000) %>%
   ggplot(aes(phosphate, c13, color = longitude)) +
   geom_point()
 ```
-
+Plot d13C vs PO4 for NOSAMS data in GLODAP deeper than 2000 m; longitude
 ```{r}
 nos_glo_dat %>% 
   filter(depth > 2000) %>%
   ggplot(aes(phosphate, c13, color = longitude.x)) +
   geom_point()
 ```
+Ditto: depth
+```{r}
+nos_glo_dat %>% 
+  filter(depth > 2000) %>%
+  ggplot(aes(aou, c13, color = depth)) +
+  geom_point()
+```
 
 ```{r}
+nos_glo_dat %>%
+  filter(depth < 2000) %>%
+  ggplot(aes(c14, c13, color = depth)) +
+  geom_point()
+```
+
+```{r}
+nos_glo_dat %>%
+  filter(depth > 2000) %>%
+  ggplot(aes(c14, c13, color = depth)) +
+  geom_point()
+```
+
+```{}
 
 library(sf)
 library(nngeo)
@@ -65,7 +88,7 @@ theme_set(theme_bw())
 
 Map it.
 
-```{r}
+```{}
 # Make it spatial
 glodap_sp <- as.data.frame(glodap) %>%
   st_as_sf(coords = c("longitude", "latitude"), crs = 4326 )

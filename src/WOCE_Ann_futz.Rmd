@@ -42,3 +42,15 @@ nosams <- nosams %>% mutate(d13Crr=ifelse(ws_comments == '\r', NA, ws_comments))
 unique(nosams$d13Crr)
 ```
 
+```{r}
+nosams <- nosams %>% mutate(ifelse(ws_comments == "\r", NA, ws_comments))
+```
+
+```{r}
+arrange(nosams, expocode, station, niskin)
+```
+
+```{r}
+
+```
+
