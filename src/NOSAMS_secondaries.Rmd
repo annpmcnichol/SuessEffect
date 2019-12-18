@@ -23,9 +23,18 @@ nosams <- read_csv("data/ann_jul_17_QA_R.csv")
 
 ```
 # boxplot of 13C data for secondaries
+
+fill <- "#4271AE"
+line <- "#1F3552"
+
 ```{r}
 d13C_box <- ggplot(nosams, aes(x = as.factor(RN2), y = d13C_1)) +
-  geom_boxplot()
+  geom_boxplot(fill = fill, color = line) +
+  scale_x_discrete(name = "Receipt Number") +
+  scale_y_continuous(name = "d13C, o/oo", breaks = seq(-1.0,1.5, 0.25), limits = c(-1.0, 1.5)) +
+  ggtitle("Boxplot of mean DI13C for NOSAMS secondary standards") +
+  theme_bw() + 
+  geom_jitter(alpha = 0.4, size = 0.2)
 d13C_box
 ```
 
