@@ -37,3 +37,14 @@ d13C_box <- ggplot(nosams, aes(x = as.factor(RN2), y = d13C_1)) +
 d13C_box
 ```
 
+#now to figure out how to extract the statistics
+
+```{r}
+fill <- "#4271AE"
+line <- "#1F3552"
+
+d13C_box_stats <- boxplot(d13C_1 ~ RN2, data = nosams)
+  
+d13C_box_stats
+```
+
