@@ -10,18 +10,16 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 
-```{r}
-setwd("/Users/ann/github/SuessEffect")
-```
 # load libraries and data
+
 ```{r}
-setwd("/Users/ann/github/SuessEffect")
-
 library(tidyverse)
+library(here)
 
-nosams <- read_csv("data/ann_jul_17_QA_R.csv")
+nosams <- read_csv(here("data/ann_jul_17_QA_R.csv"))
 
 ```
+
 # boxplot of 13C data for secondaries
 
 fill <- "#4271AE"
