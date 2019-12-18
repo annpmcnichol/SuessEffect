@@ -43,8 +43,9 @@ d13C_box
 fill <- "#4271AE"
 line <- "#1F3552"
 
-d13C_box_stats <- boxplot(d13C_1 ~ RN2, data = nosams)
-  
+d13C_box_stats <- boxplot(d13C_1 ~ RN2, data = nosams) 
 d13C_box_stats
+
+write_csv(d13C_box_stats, Users/ann/github/SuessEffect/data)
 ```
 
