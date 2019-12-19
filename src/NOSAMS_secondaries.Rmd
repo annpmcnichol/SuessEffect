@@ -46,6 +46,28 @@ line <- "#1F3552"
 d13C_box_stats <- boxplot(d13C_1 ~ RN2, data = nosams) 
 d13C_box_stats
 
-write_csv(d13C_box_stats, Users/ann/github/SuessEffect/data)
+```
+
+#calculate mean and stdev for each RN; also select and look at weird results
+
+```{r}
+nosams %>% 
+  group_by(RN2) %>%
+  summarize(avg = mean(d13C_1, na.rm = TRUE), stand = sd(d13C_1, na.rm=TRUE), num = n())
+
+
+nosams %>%
+  filter(RN2 == 2) %>%
+  select(RN2, d13C_1)
+```
+
+#generate and save data in csv file
+
+```{r}
+nosams %>% 
+  group_by(RN2) %>%
+  summarize(avg = mean(d13C_1, na.rm = TRUE), stand = sd(d13C_1, na.rm=TRUE), num = n())
+
+
 ```
 
