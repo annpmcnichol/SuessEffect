@@ -64,10 +64,12 @@ nosams %>%
 #generate and save data in csv file
 
 ```{r}
-nosams %>% 
+nosams_sum <- nosams %>% 
   group_by(RN2) %>%
-  summarize(avg = mean(d13C_1, na.rm = TRUE), stand = sd(d13C_1, na.rm=TRUE), num = n())
+  summarize(avg = mean(d13C_1, na.rm = TRUE), 
+            stand = sd(d13C_1, na.rm=TRUE), 
+            num = n())
 
-
+write_csv(nosams_sum, here("data/secondarysum.csv"))
 ```
 
