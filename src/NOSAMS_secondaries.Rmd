@@ -2,7 +2,9 @@
 title: "NOSAMS_secondaries"
 author: "Ann McNichol"
 date: "12/18/2019"
-output: html_document
+output:
+  pdf_document: default
+  html_document: default
 ---
 
 ```{r setup, include=FALSE}
@@ -31,7 +33,7 @@ d13C_box <- ggplot(nosams, aes(x = as.factor(RN2), y = d13C_1)) +
   geom_boxplot(fill = fill, color = line) +
   scale_x_discrete(name = "Receipt Number") +
   scale_y_continuous(name = "d13C, o/oo", breaks = seq(-1.0,1.5, 0.25), limits = c(-1.0, 1.5)) +
-  ggtitle("Boxplot of mean DI13C for NOSAMS secondary standards") +
+  ggtitle("Boxplot of median DI13C for NOSAMS secondary standards") +
   theme_bw() + 
   geom_jitter(alpha = 0.4, size = 0.2)
 d13C_box
@@ -63,11 +65,39 @@ nosams %>%
 
 #generate and save data in csv file
 
-```{r}
+The code below is very flawed. Check out the later version that works, thank you Sam!
+
+
 nosams %>% 
   group_by(RN2) %>%
-  summarize(avg = mean(d13C_1, na.rm = TRUE), stand = sd(d13C_1, na.rm=TRUE), num = n())
+   d13C_stats <- summarize(, avg = mean(d13C_1, na.rm = TRUE), stand = sd(d13C_1, na.rm=TRUE), num = n()) 
+
+  write.csv(d13C_stats, file = "d13C_stats.csv")
 
 
+#boxplot for DI14C results
+
+```{r}
+
+fill <- "#4271AE"
+line <- "#1F3552"
+
+D14C_box <- ggplot(nosams, aes(x = as.factor(RN2), y = D14C)) +
+  geom_boxplot(fill = fill, color = line) +
+  scale_x_discrete(name = "Receipt Number") +
+  scale_y_continuous(name = "D14C, o/oo") +
+  ggtitle("Boxplot of median DI14C for NOSAMS secondary standards") +
+  theme_bw() + 
+  geom_jitter(alpha = 0.4, size = 0.2)
+D14C_box
+```
+
+```{r}
+d13C_stats <- nosams %>% 
+  group_by(RN2)
+  
+d13C_stats_sumary <- summarize(d13C_stats, avg = mean(d13C_1, na.rm = TRUE), stand = sd(d13C_1, na.rm=TRUE), num = n()) 
+
+  write.csv(d13C_stats, file = "d13C_stats.csv")
 ```
 
