@@ -65,6 +65,7 @@ nosams %>%
 
 #generate and save data in csv file
 
+<<<<<<< HEAD
 The code below is very flawed. Check out the later version that works, thank you Sam!
 
 
@@ -99,5 +100,15 @@ d13C_stats <- nosams %>%
 d13C_stats_sumary <- summarize(d13C_stats, avg = mean(d13C_1, na.rm = TRUE), stand = sd(d13C_1, na.rm=TRUE), num = n()) 
 
   write.csv(d13C_stats, file = "d13C_stats.csv")
+=======
+```{r}
+nosams_sum <- nosams %>% 
+  group_by(RN2) %>%
+  summarize(avg = mean(d13C_1, na.rm = TRUE), 
+            stand = sd(d13C_1, na.rm=TRUE), 
+            num = n())
+
+write_csv(nosams_sum, here("data/secondarysum.csv"))
+>>>>>>> 31c34e50a4e5d472e6bd22c13ca5615bc1289b1b
 ```
 
