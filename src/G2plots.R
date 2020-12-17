@@ -47,6 +47,7 @@ Atl_AOU_f <-
   ggtitle("Atlantic  WOCE") +
   theme_bw() + 
   geom_jitter(alpha = 1.0, size = 1) +
+  geom_smooth(method = "lm") +
   facet_wrap(facets = vars(expocode))
  
 Atl_AOU_f
@@ -104,5 +105,8 @@ Atl_13c_aou_po4 <- Atlantic_WOCE %>%
  
 #lots of places are missing phosphate, the entire A16S, lots of A05 and A16N
 
+#start running linear regressions on each line. Start with AOU.
 
+d13C_all_fit <- lm(G2c13 ~ G2aou, data = Atlantic_AOU)
 
+summary(d13C_all_fit)
