@@ -110,3 +110,127 @@ Atl_13c_aou_po4 <- Atlantic_WOCE %>%
 d13C_all_fit <- lm(G2c13 ~ G2aou, data = Atlantic_AOU)
 
 summary(d13C_all_fit)
+
+#now let's do this for each cruise; then figure out how to do it with one command
+
+A16S_AOU <- filter(Atlantic_AOU, expocode == "A16S")
+A16S_AOU_fit <- lm(G2c13 ~ G2aou, data = A16S_AOU)
+summary(A16S_AOU_fit)
+
+
+A16N_AOU <- filter(Atlantic_AOU, expocode == "A16N")
+A16N_AOU_fit <- lm(G2c13 ~ G2aou, data = A16N_AOU)
+summary(A16N_AOU_fit)
+
+
+A20_AOU <- filter(Atlantic_AOU, expocode == "A20")
+A20_AOU_fit <- lm(G2c13 ~ G2aou, data = A20_AOU)
+summary(A20_AOU_fit)
+
+
+A22_AOU <- filter(Atlantic_AOU, expocode == "A22")
+A22_AOU_fit <- lm(G2c13 ~ G2aou, data = A22_AOU)
+summary(A22_AOU_fit)
+
+
+A05_AOU <- filter(Atlantic_AOU, expocode == "A05")
+A05_AOU_fit <- lm(G2c13 ~ G2aou, data = A05_AOU)
+summary(A05_AOU_fit)
+
+
+
+A_AOU <- filter(Atlantic_AOU, expocode == c("A16N","A20", "A22", "A05"))
+A_AOU_fit <- lm(G2c13 ~ G2aou, data = A_AOU)
+summary(A_AOU_fit)
+
+#plot density and depth
+
+Atl_sig0_depth_g <- 
+  ggplot(Atlantic_WOCE, aes(x = G2depth, y = G2sigma0, group = expocode, shape=expocode, color=expocode)) +
+  scale_shape_manual(values=c(21:25)) +
+  scale_color_manual(values=cbbPalette) +
+  scale_fill_manual(values=cbbPalette) +
+  scale_x_continuous(name = "Depth") +
+  scale_y_continuous(name = "sigma0") +
+  ggtitle("Atlantic  WOCE, sigma0 vs depth") +
+  theme_bw() + 
+  geom_jitter(alpha = 1.0, size = 1) 
+
+Atl_sig0_depth_g
+
+#plot d13C vs AOU for samples deeper than 1500 m
+
+Atlantic_AOU_deep <-
+  filter(Atlantic_WOCE, G2depth > 1500)
+
+
+Atl_AOU_deep_f <-
+  ggplot(Atlantic_AOU_deep, aes(x = G2aou, y = G2c13, group = expocode, shape=expocode, color=expocode)) +
+  scale_shape_manual(values=c(21:25)) +
+  scale_color_manual(values=cbbPalette) +
+  scale_fill_manual(values=cbbPalette) +
+  scale_x_continuous(name = "AOU") +
+  scale_y_continuous(name = "d13C, o/oo", breaks = seq(0.0,2.25, 0.25), limits = c(0.0, 1.5)) +
+  ggtitle("Atlantic  WOCE") +
+  theme_bw() + 
+  geom_jitter(alpha = 1.0, size = 1) +
+  geom_smooth(method = "lm") +
+  facet_wrap(facets = vars(expocode))
+
+Atl_AOU_deep_f
+
+#Now calculate the slopes for the deep water, i.e. water with  no influence of anthro CO2
+
+A16S_AOU_deep <- filter(Atlantic_AOU_deep, expocode == "A16S")
+A16S_AOU_deep_fit <- lm(G2c13 ~ G2aou, data = A16S_AOU_deep)
+summary(A16S_AOU_deep_fit)
+
+
+A16N_AOU_deep <- filter(Atlantic_AOU_deep, expocode == "A16N")
+A16N_AOU_deep_fit <- lm(G2c13 ~ G2aou, data = A16N_AOU_deep)
+summary(A16N_AOU_deep_fit)
+
+
+A20_AOU_deep <- filter(Atlantic_AOU_deep, expocode == "A20")
+A20_AOU_deep_fit <- lm(G2c13 ~ G2aou, data = A20_AOU_deep)
+summary(A20_AOU_deep_fit)
+
+
+A22_AOU_deep <- filter(Atlantic_AOU_deep, expocode == "A22")
+A22_AOU_deep_fit <- lm(G2c13 ~ G2aou, data = A22_AOU_deep)
+summary(A22_AOU_deep_fit)
+
+
+A05_AOU_deep <- filter(Atlantic_AOU_deep, expocode == "A05")
+A05_AOU_deep_fit <- lm(G2c13 ~ G2aou, data = A05_AOU_deep)
+summary(A05_AOU_deep_fit)
+
+
+
+A_AOU_deep <- filter(Atlantic_AOU_deep, expocode == c("A16N","A20", "A22", "A05"))
+A_AOU_deep_fit <- lm(G2c13 ~ G2aou, data = A_AOU_deep)
+summary(A_AOU_deep_fit)
+
+#Now let's get the shallow data for ODV plots; right now I need A20 and A22
+
+
+
+Atlantic_shallow <-
+  filter(Atlantic_WOCE, G2depth < 1500)
+
+A20_shallow <- filter(Atlantic_shallow, expocode == "A20")
+write_csv(A20_shallow, here("data/A20_shallow.csv"))
+
+A22_shallow <- filter(Atlantic_shallow, expocode == "A22")
+write_csv(A22_shallow, here("data/A22_shallow.csv"))
+
+#find the stations in A16S and A16N that are co-located or close
+
+A16_colocate <-
+  filter(Atlantic_WOCE, expocode== c("A16N", "A16S"), between(G2latitude, -10, 10))
+write_csv(A16_colocate, here("data/A16_colocate.csv"))
+
+
+
+
+
