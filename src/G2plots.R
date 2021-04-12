@@ -230,7 +230,15 @@ A16_colocate <-
   filter(Atlantic_WOCE, expocode== c("A16N", "A16S"), between(G2latitude, -10, 10))
 write_csv(A16_colocate, here("data/A16_colocate.csv"))
 
+#trying to use these data in ODV didn't work, so let's try it in R. Trying to 
+#plot d13C vs pressure for A16 stations between 2°N and -5°S; need to be identified
+#by cruise and by station. 
 
+A16_compare <-
+  filter(Atlantic_WOCE, expocode== c("A16N", "A16S"), between(G2latitude, -5.5, 2.5)) 
 
+A16_compare_g <-
+  ggplot(A16_compare, aes(x = G2c13, y = G2pressure, group = expocode, shape=expocode, color=expocode)) +
+  geom_jitter(alpha = 1.0, size = 1)
 
-
+A16_compare_g
