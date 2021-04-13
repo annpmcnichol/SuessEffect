@@ -239,6 +239,26 @@ A16_compare <-
 
 A16_compare_g <-
   ggplot(A16_compare, aes(x = G2c13, y = G2pressure, group = expocode, shape=expocode, color=expocode)) +
-  geom_jitter(alpha = 1.0, size = 1)
+  scale_color_manual(values=cbbPalette) +
+  scale_fill_manual(values=cbbPalette) +
+  scale_x_continuous(name = "d13C, o/oo") +
+  scale_y_reverse(name = "Pressure") +
+  ggtitle("Atlantic  Overlap") +
+  geom_jitter(alpha = 1.0, size = 1) 
 
 A16_compare_g
+
+A16_test <-
+  filter(Atlantic_WOCE, expocode=="A16N", between(G2latitude, -5.5, 2.5))
+
+A16_test_g <-
+  ggplot(A16_test, aes(x = G2c13, y = G2pressure, group = as.factor(G2station), shape=as.factor(G2station))) +
+  scale_color_manual(values=cbbPalette) +
+  scale_fill_manual(values=cbbPalette) +
+  scale_x_continuous(name = "d13C, o/oo") +
+  scale_y_reverse(name = "Pressure") +
+  ggtitle("Atlantic  WOCE") +
+  geom_jitter(alpha = 1.0, size = 1) 
+
+A16_test_g
+
