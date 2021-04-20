@@ -18,6 +18,7 @@ cbbPalette <- c("#000000", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2"
 Atlantic_WOCE$expocode <- factor(Atlantic_WOCE$expocode, levels=c("33MW19910711", "33MW19930704.1",
                       "316N19970717", "316N19970815", "33RO19980123"), labels = c("A16S", "A16N",
                         "A20", "A22", "A05"))
+write_csv(Atlantic_WOCE, here("data/Atlantic_WOCE.csv"))
 
 Atlantic_AOU <- 
   filter(Atlantic_WOCE, G2aou > 0.0)
@@ -154,7 +155,7 @@ Atl_sig0_depth_g <-
   scale_y_continuous(name = "sigma0") +
   ggtitle("Atlantic  WOCE, sigma0 vs depth") +
   theme_bw() + 
-  geom_jitter(alpha = 1.0, size = 1) 
+  geom_jitter(alpha = 1.0, size = 2) 
 
 Atl_sig0_depth_g
 
@@ -235,16 +236,17 @@ write_csv(A16_colocate, here("data/A16_colocate.csv"))
 #by cruise and by station. 
 
 A16_compare <-
-  filter(Atlantic_WOCE, expocode== c("A16N", "A16S"), between(G2latitude, -5.5, 2.5)) 
+  filter(Atlantic_WOCE, expocode== c("A16N", "A16S"), between(G2latitude, -5.5, 2.5), +
+           !(G2station %in% c(10,1,14)), G2pressure > 1000) 
 
 A16_compare_g <-
-  ggplot(A16_compare, aes(x = G2c13, y = G2pressure, group = expocode, shape=expocode, color=expocode)) +
+  ggplot(A16_compare, aes(x = G2c13, y = G2pressure, group = expocode, shape=as.factor(G2station), color=expocode)) +
   scale_color_manual(values=cbbPalette) +
   scale_fill_manual(values=cbbPalette) +
-  scale_x_continuous(name = "d13C, o/oo") +
+  scale_x_continuous(name = "d13C, o/oo", limits=c(0.25, 1.25)) +
   scale_y_reverse(name = "Pressure") +
   ggtitle("Atlantic  Overlap") +
-  geom_jitter(alpha = 1.0, size = 1) 
+  geom_jitter(alpha = 1.0, size = 4) 
 
 A16_compare_g
 
