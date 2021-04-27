@@ -264,3 +264,32 @@ A16_test_g <-
 
 A16_test_g
 
+## Need to calculate age so can plot AOU vs 14C at depth; example function below
+
+###Calculate D14C (seawater_dc14), need to define a variable and a function
+####lambda14 <- 0.00012097
+####calcd14c <- function(fm, yc) {1000*( -1 + fm*exp(lambda14*(1950 - yc)))}
+
+### for age: Rage = -8033*ln(fm); fm = (D14C + 1000)/(lambda*(1950 - yc))
+### let's do it!
+### First parse out year.
+
+Atlantic_WOCE <- Atlantic_WOCE %>%
+  mutate(coll_yr = (format(as.Date(Atlantic_WOCE$collection_date, format="%Y-%m-%d"),"%Y")))
+
+lambda14 <- 0.00012097
+calc_age <- function(D14C, year) {-8033*log((D14C + 1000)/(lambda14*(1950 - year)))}
+
+Atlantic_WOCE <- Atlantic_WOCE %>%
+  mutate(Rage = calc_age(G2c14, coll_yr))
+
+####A20_nos <- A20_nos %>%
+  ####mutate(seawater_dc14 = calcd14c(f_modern, coll_yr))
+
+
+
+
+
+
+
+
