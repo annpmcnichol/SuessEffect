@@ -275,20 +275,35 @@ A16_test_g
 ### First parse out year.
 
 Atlantic_WOCE <- Atlantic_WOCE %>%
-  mutate(coll_yr = (format(as.Date(Atlantic_WOCE$collection_date, format="%Y-%m-%d"),"%Y")))
+  mutate(coll_yr = (format(as.Date(Atlantic_WOCE$collection_time, format="%Y-%m-%d %H:%M:%S"),"%Y")))
+  Atlantic_WOCE$coll_yr <- as.numeric(as.character(Atlantic_WOCE$coll_yr))
 
 lambda14 <- 0.00012097
-calc_age <- function(D14C, year) {-8033*log((D14C + 1000)/(lambda14*(1950 - year)))}
+calc_age <- function(D14C, year) {-8033*log(((D14C/1000) + 1)/exp(lambda14*(1950 - year)))}
 
 Atlantic_WOCE <- Atlantic_WOCE %>%
   mutate(Rage = calc_age(G2c14, coll_yr))
 
-####A20_nos <- A20_nos %>%
-  ####mutate(seawater_dc14 = calcd14c(f_modern, coll_yr))
+####Now for the plots
 
+Atlantic_WOCE_deep <- filter(Atlantic_WOCE, G2pressure > 1000)
 
+Atl_AOU_Age_f <-
+  ggplot(Atlantic_WOCE_deep, aes(x = Rage, y = G2aou, group = expocode, shape=expocode, color=expocode)) +
+  scale_shape_manual(values=c(21:25)) +
+  scale_color_manual(values=cbbPalette) +
+  scale_fill_manual(values=cbbPalette) +
+  scale_x_continuous(name = "AOU") +
+  scale_y_continuous(name = "Rad Age, yr") +
+  ggtitle("Atlantic  WOCE") +
+  theme_bw() + 
+  geom_jitter(alpha = 1.0, size = 1) +
+  geom_smooth(method = "lm") +
+  facet_wrap(facets = vars(expocode))
 
+Atl_AOU_Age_f
 
+###next plot 14C and SiO2
 
 
 
