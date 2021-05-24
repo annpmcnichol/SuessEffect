@@ -128,7 +128,7 @@ glodapv2_dic <- glodapv2 %>%
          G2latitude, G2longitude, G2bottomdepth, G2maxsampdepth, 
          G2bottle, G2pressure, G2depth, G2temperature, G2theta, G2salinity,
          G2sigma0, G2sigma1, G2sigma2, G2sigma3, G2sigma4, 
-         G2oxygen, G2aou, G2silicate, G2phosphate, G2tco2, G2talk,
+         G2oxygen, G2aou, G2nitrate, G2silicate, G2phosphate, G2tco2, G2talk,
          G2c13, G2c13f, G2c14, G2c14f, G2c14err) %>%
   inner_join(expcodes, by = c("G2cruise" = "num")) %>%
   rename(expocode = cruise)
