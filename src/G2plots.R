@@ -305,6 +305,70 @@ Atl_AOU_Age_f
 
 ###next plot 14C and SiO2
 
+Atl_14C_SiO2_f <-
+  ggplot(Atlantic_WOCE, aes(x = G2silicate, y = G2c14, group = expocode, shape=expocode, color=expocode)) +
+  scale_shape_manual(values=c(21:25)) +
+  scale_color_manual(values=cbbPalette) +
+  scale_fill_manual(values=cbbPalette) +
+  scale_x_continuous(name = "SiO2") +
+  scale_y_continuous(name = "D14C") +
+  ggtitle("Atlantic  WOCE") +
+  theme_bw() + 
+  geom_jitter(alpha = 1.0, size = 1) +
+  geom_smooth(method = "lm") +
+  facet_wrap(facets = vars(expocode))
+
+Atl_14C_SiO2_f
+
+###look at deep only
+
+Atl_14C_SiO2_deep_f <-
+  ggplot(Atlantic_WOCE_deep, aes(x = G2silicate, y = G2c14, group = expocode, shape=expocode, color=expocode)) +
+  scale_shape_manual(values=c(21:25)) +
+  scale_color_manual(values=cbbPalette) +
+  scale_fill_manual(values=cbbPalette) +
+  scale_x_continuous(name = "SiO2") +
+  scale_y_continuous(name = "D14C") +
+  ggtitle("Atlantic  WOCE") +
+  theme_bw() + 
+  geom_jitter(alpha = 1.0, size = 1) +
+  geom_smooth(method = "lm") +
+  facet_wrap(facets = vars(expocode))
+
+Atl_14C_SiO2_deep_f
 
 
+###calculate potential Alk and then plot DI14C vs Palk;
+### Palk = (Alk + nitrate)*35/Salinity
 
+###Damn! I don't have nitrate in the file: got it!
+
+calc_Palk <- function(Alk, nitrate, salinity) {(Alk + nitrate)*35/salinity}
+  
+Atlantic_WOCE <- Atlantic_WOCE %>%
+  mutate(Palk = calc_Palk(G2talk, G2nitrate, G2salinity)) 
+  mutate(Palk_mod = Palk - 2320)
+
+Atl_14C_Palk_f <-
+  ggplot(Atlantic_WOCE, aes(x = (Palk - 2320), y = G2c14, group = expocode, shape=expocode, color=expocode)) +
+  scale_shape_manual(values=c(21:25)) +
+  scale_color_manual(values=cbbPalette) +
+  scale_fill_manual(values=cbbPalette) +
+  scale_x_continuous(name = "Palk") +
+  scale_y_continuous(name = "D14C") +
+  ggtitle("Atlantic  WOCE") +
+  theme_bw() + 
+  geom_jitter(alpha = 1.0, size = 1) +
+  geom_smooth(method = "lm") +
+  facet_wrap(facets = vars(expocode))
+
+Atl_14C_Palk_f
+
+#A16N_AOU_deep <- filter(Atlantic_AOU_deep, expocode == "A16N")
+#A16N_AOU_deep_fit <- lm(G2c13 ~ G2aou, data = A16N_AOU_deep)
+#summary(A16N_AOU_deep_fit)
+
+
+A16N_Palk <- filter(Atlantic_WOCE, expocode == "A16N")
+A16N_Palk_fit <- lm(G2c14 ~ Palk_mod, data = A16N_Palk)
+summary(A16N_Palk_fit)
