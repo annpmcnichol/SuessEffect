@@ -346,7 +346,7 @@ Atl_14C_SiO2_deep_f
 calc_Palk <- function(Alk, nitrate, salinity) {(Alk + nitrate)*35/salinity}
   
 Atlantic_WOCE <- Atlantic_WOCE %>%
-  mutate(Palk = calc_Palk(G2talk, G2nitrate, G2salinity)) 
+  mutate(Palk = calc_Palk(G2talk, G2nitrate, G2salinity)) +
   mutate(Palk_mod = Palk - 2320)
 
 Atl_14C_Palk_f <-
