@@ -2,6 +2,7 @@
 
 library(tidyverse)
 library(lubridate)
+library(ggpubr)
 library(here)
 
 glodapv2_dic <- read_csv(here("data/glodapv2_dic.csv"))
@@ -346,7 +347,9 @@ Atl_14C_SiO2_deep_f
 calc_Palk <- function(Alk, nitrate, salinity) {(Alk + nitrate)*35/salinity}
   
 Atlantic_WOCE <- Atlantic_WOCE %>%
-  mutate(Palk = calc_Palk(G2talk, G2nitrate, G2salinity)) +
+  mutate(Palk = calc_Palk(G2talk, G2nitrate, G2salinity)) 
+
+Atlantic_WOCE <- Atlantic_WOCE %>%
   mutate(Palk_mod = Palk - 2320)
 
 Atl_14C_Palk_f <-
@@ -360,6 +363,7 @@ Atl_14C_Palk_f <-
   theme_bw() + 
   geom_jitter(alpha = 1.0, size = 1) +
   geom_smooth(method = "lm") +
+  stat_regline_equation(label.y = -200, aes(label = ..eq.label..)) +
   facet_wrap(facets = vars(expocode))
 
 Atl_14C_Palk_f
