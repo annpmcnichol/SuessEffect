@@ -1,5 +1,6 @@
 #Select Atlantic data; use expocodes
 
+ins
 library(tidyverse)
 library(lubridate)
 library(ggpubr)
@@ -95,7 +96,8 @@ Atl_deepP_g <-
   scale_y_continuous(name = "d13C, o/oo", breaks = seq(0.5,1.25, 0.10), limits = c(0.5, 1.25)) +
   ggtitle("Atlantic  WOCE, > 750m") +
   theme_bw() + 
-  geom_jitter(alpha = 1.0, size = 1) 
+  geom_jitter(alpha = 1.0, size = 1) +
+  stat_regline_equation(aes(label = ..eq.label..)) 
 
 Atl_deepP_g
 
@@ -363,7 +365,6 @@ Atl_14C_Palk_f <-
   theme_bw() + 
   geom_jitter(alpha = 1.0, size = 1) +
   geom_smooth(method = "lm") +
-  stat_regline_equation(label.y = -200, aes(label = ..eq.label..)) +
   facet_wrap(facets = vars(expocode))
 
 Atl_14C_Palk_f
