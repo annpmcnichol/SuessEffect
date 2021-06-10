@@ -1,6 +1,5 @@
 #Select Atlantic data; use expocodes
 
-ins
 library(tidyverse)
 library(lubridate)
 library(ggpubr)
@@ -346,7 +345,7 @@ Atl_14C_SiO2_deep_f
 
 ###Damn! I don't have nitrate in the file: got it!
 
-calc_Palk <- function(Alk, nitrate, salinity) {(Alk + nitrate)*35/salinity}
+calc_Palk <- function(Alk, nitrate, salinity) {((Alk + nitrate)*35)/salinity}
   
 Atlantic_WOCE <- Atlantic_WOCE %>%
   mutate(Palk = calc_Palk(G2talk, G2nitrate, G2salinity)) 
@@ -355,17 +354,18 @@ Atlantic_WOCE <- Atlantic_WOCE %>%
   mutate(Palk_mod = Palk - 2320)
 
 Atl_14C_Palk_f <-
-  ggplot(Atlantic_WOCE, aes(x = (Palk - 2320), y = G2c14, group = expocode, shape=expocode, color=expocode)) +
+  ggplot(Atlantic_WOCE, aes(x = (Palk_mod), y = G2c14, group = expocode, shape=expocode, color=expocode)) +
   scale_shape_manual(values=c(21:25)) +
   scale_color_manual(values=cbbPalette) +
   scale_fill_manual(values=cbbPalette) +
-  scale_x_continuous(name = "Palk") +
+  scale_x_continuous(name = "Palk - 2320") +
   scale_y_continuous(name = "D14C") +
   ggtitle("Atlantic  WOCE") +
   theme_bw() + 
   geom_jitter(alpha = 1.0, size = 1) +
   geom_smooth(method = "lm") +
-  facet_wrap(facets = vars(expocode))
+  geom_abline(intercept=-53, slope=-1, linetype = 3) +
+  facet_wrap(facets = vars(expocode), nrow = 5)
 
 Atl_14C_Palk_f
 
@@ -377,3 +377,54 @@ Atl_14C_Palk_f
 A16N_Palk <- filter(Atlantic_WOCE, expocode == "A16N")
 A16N_Palk_fit <- lm(G2c14 ~ Palk_mod, data = A16N_Palk)
 summary(A16N_Palk_fit)
+
+
+##use ggplot2 to add the equation; take function from stackoverflow
+
+lm_eqn <- function(df){
+  m <- lm(G2c14 ~ Palk_mod, df);
+  eq <- substitute(italic(y) == a + b %.% italic(x)*","~~italic(r)^2~"="~r2, 
+                   list(a = format(unname(coef(m)[1]), digits = 2),
+                        b = format(unname(coef(m)[2]), digits = 2),
+                        r2 = format(summary(m)$r.squared, digits = 3)))
+  as.character(as.expression(eq));
+}
+
+A16N_Palk <- filter(Atlantic_WOCE, expocode == "A16N")
+
+A16N_14C_Palk <-
+  ggplot(A16N_Palk, aes(x = (Palk_mod), y = G2c14)) +
+  scale_shape_manual(values=c(21:25)) +
+  scale_color_manual(values=cbbPalette) +
+  scale_fill_manual(values=cbbPalette) +
+  scale_x_continuous(name = "Palk - 2320") +
+  scale_y_continuous(name = "D14C") +
+  ggtitle("A16N") +
+  theme_bw() + 
+  geom_jitter(alpha = 1.0, size = 1) +
+  geom_smooth(method = "lm") +
+  geom_abline(intercept=-53, slope=-1, linetype = 1) 
+
+A16N_14C_Palk_reg <- A16N_14C_Palk + geom_text(x=75, y=100,label = lm_eqn(A16N_Palk), parse = TRUE)
+
+
+Atl_14C_Palk_f <-
+  ggplot(Atlantic_WOCE, aes(x = (Palk_mod), y = G2c14, group = expocode, shape=expocode, color=expocode)) +
+  scale_shape_manual(values=c(21:25)) +
+  scale_color_manual(values=cbbPalette) +
+  scale_fill_manual(values=cbbPalette) +
+  scale_x_continuous(name = "Palk - 2320") +
+  scale_y_continuous(name = "D14C") +
+  ggtitle("Atlantic  WOCE") +
+  theme_bw() + 
+  geom_jitter(alpha = 1.0, size = 1) +
+  geom_smooth(method = "lm") +
+  geom_abline(intercept=-53, slope=-1, linetype = 3) +
+  geom_text(x=75, y=100,label = lm_eqn(Atlantic_WOCE), parse = TRUE) +
+  facet_wrap(facets = vars(expocode), nrow = 5)
+
+Atl_14C_Palk_f 
+
+
+
+
