@@ -2,7 +2,6 @@
 
 library(tidyverse)
 library(lubridate)
-library(ggpubr)
 library(here)
 
 glodapv2_dic <- read_csv(here("data/glodapv2_dic.csv"))
@@ -356,8 +355,8 @@ Atlantic_WOCE <- Atlantic_WOCE %>%
 Atl_14C_Palk_f <-
   ggplot(Atlantic_WOCE, aes(x = (Palk_mod), y = G2c14, group = expocode, shape=expocode, color=expocode)) +
   scale_shape_manual(values=c(21:25)) +
-  scale_color_manual(values=cbbPalette) +
-  scale_fill_manual(values=cbbPalette) +
+  scale_color_manual(values= cbbPalette) +
+  scale_fill_manual(values= cbbPalette) +
   scale_x_continuous(name = "Palk - 2320") +
   scale_y_continuous(name = "D14C") +
   ggtitle("Atlantic  WOCE") +
@@ -395,19 +394,24 @@ A16N_Palk <- filter(Atlantic_WOCE, expocode == "A16N")
 A16N_14C_Palk <-
   ggplot(A16N_Palk, aes(x = (Palk_mod), y = G2c14)) +
   scale_shape_manual(values=c(21:25)) +
-  scale_color_manual(values=cbbPalette) +
+  scale_color_manual(values= cbbPalette) +
   scale_fill_manual(values=cbbPalette) +
-  scale_x_continuous(name = "Palk - 2320") +
-  scale_y_continuous(name = "D14C") +
+  scale_x_continuous(name = "Palk - 2320", limits = c(-50,110)) +
+  scale_y_continuous(name = "D14C", limits = c(-225, 125)) +
   ggtitle("A16N") +
   theme_bw() + 
-  geom_jitter(alpha = 1.0, size = 1) +
-  geom_smooth(method = "lm") +
+  geom_jitter(alpha = 1.0, size = 1, col = "#E69F00") +
+  geom_smooth(method = "lm", col = "#E69F00" ) +
   geom_abline(intercept=-53, slope=-1, linetype = 1) 
 
 A16N_14C_Palk_reg <- A16N_14C_Palk + geom_text(x=75, y=100,label = lm_eqn(A16N_Palk), parse = TRUE)
 
+A16N_14C_Palk_reg
 
+##I think the only way to do what I want is to make 4 plots 
+##and put them on a grid (it would be 5 plots except A16S has no data)
+
+###top of failed attempt
 Atl_14C_Palk_f <-
   ggplot(Atlantic_WOCE, aes(x = (Palk_mod), y = G2c14, group = expocode, shape=expocode, color=expocode)) +
   scale_shape_manual(values=c(21:25)) +
@@ -420,11 +424,72 @@ Atl_14C_Palk_f <-
   geom_jitter(alpha = 1.0, size = 1) +
   geom_smooth(method = "lm") +
   geom_abline(intercept=-53, slope=-1, linetype = 3) +
-  geom_text(x=75, y=100,label = lm_eqn(Atlantic_WOCE), parse = TRUE) +
+  geom_text(x=75, y=100,label = lm_eqn(Atlantic_WOCE,aes(x = (Palk_mod), y = G2c14, group = expocode)), parse = TRUE) +
   facet_wrap(facets = vars(expocode), nrow = 5)
 
 Atl_14C_Palk_f 
+###bottom of failed attempt
 
+##I think the only way to do what I want is to make 4 plots 
+##and put them on a grid (it would be 5 plots except A16S has no data)
 
+A20_Palk <- filter(Atlantic_WOCE, expocode == "A20")
 
+A20_14C_Palk <-
+  ggplot(A20_Palk, aes(x = (Palk_mod), y = G2c14)) +
+  scale_shape_manual(values=c(21:25)) +
+  scale_color_manual(values=cbbPalette) +
+  scale_fill_manual(values=cbbPalette) +
+  scale_x_continuous(name = "Palk - 2320", limits = c(-50,110)) +
+  scale_y_continuous(name = "D14C", limits = c(-225, 125)) +
+  ggtitle("A20") +
+  theme_bw() + 
+  geom_jitter(alpha = 1.0, size = 1, col = "#56B4E9") +
+  geom_smooth(method = "lm", col = "#56B4E9") +
+  geom_abline(intercept=-53, slope=-1, linetype = 1) 
 
+A20_14C_Palk_reg <- A20_14C_Palk + geom_text(x=75, y=100,label = lm_eqn(A20_Palk), parse = TRUE)
+
+A20_14C_Palk_reg
+
+##A22
+
+A22_Palk <- filter(Atlantic_WOCE, expocode == "A22")
+
+A22_14C_Palk <-
+  ggplot(A22_Palk, aes(x = (Palk_mod), y = G2c14)) +
+  scale_shape_manual(values=c(21:25)) +
+  scale_color_manual(values=cbbPalette) +
+  scale_fill_manual(values=cbbPalette) +
+  scale_x_continuous(name = "Palk - 2320", limits = c(-50,110)) +
+  scale_y_continuous(name = "D14C", limits = c(-225, 125)) +
+  ggtitle("A22") +
+  theme_bw() + 
+  geom_jitter(alpha = 1.0, size = 1, col = "#009E73") +
+  geom_smooth(method = "lm", col = "#009E73") +
+  geom_abline(intercept=-53, slope=-1, linetype = 1) 
+
+A22_14C_Palk_reg <- A22_14C_Palk + geom_text(x=75, y=100,label = lm_eqn(A22_Palk), parse = TRUE)
+
+A22_14C_Palk_reg
+
+##A05
+
+A05_Palk <- filter(Atlantic_WOCE, expocode == "A05")
+
+A05_14C_Palk <-
+  ggplot(A05_Palk, aes(x = (Palk_mod), y = G2c14)) +
+  scale_shape_manual(values=c(21:25)) +
+  scale_color_manual(values=cbbPalette) +
+  scale_fill_manual(values=cbbPalette) +
+  scale_x_continuous(name = "Palk - 2320", limits = c(-50,110)) +
+  scale_y_continuous(name = "D14C", limits = c(-225, 125)) +
+  ggtitle("A05") +
+  theme_bw() + 
+  geom_jitter(alpha = 1.0, size = 1, col ="#F0E442") +
+  geom_smooth(method = "lm", col = "#F0E442") +
+  geom_abline(intercept=-53, slope=-1, linetype = 1) 
+
+A05_14C_Palk_reg <- A05_14C_Palk + geom_text(x=75, y=100,label = lm_eqn(A05_Palk), parse = TRUE)
+
+A05_14C_Palk_reg
