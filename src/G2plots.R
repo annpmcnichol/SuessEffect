@@ -1,5 +1,7 @@
 #Select Atlantic data; use expocodes
 
+##Run these at the beginning of a session
+
 library(tidyverse)
 library(lubridate)
 library(here)
@@ -18,6 +20,32 @@ cbbPalette <- c("#000000", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2"
 Atlantic_WOCE$expocode <- factor(Atlantic_WOCE$expocode, levels=c("33MW19910711", "33MW19930704.1",
                       "316N19970717", "316N19970815", "33RO19980123"), labels = c("A16S", "A16N",
                         "A20", "A22", "A05"))
+
+Atlantic_WOCE <- Atlantic_WOCE %>%
+  mutate(coll_yr = (format(as.Date(Atlantic_WOCE$collection_time, format="%Y-%m-%d %H:%M:%S"),"%Y")))
+Atlantic_WOCE$coll_yr <- as.numeric(as.character(Atlantic_WOCE$coll_yr))
+
+lambda14 <- 0.00012097
+calc_age <- function(D14C, year) {-8033*log(((D14C/1000) + 1)/exp(lambda14*(1950 - year)))}
+
+Atlantic_WOCE <- Atlantic_WOCE %>%
+  mutate(Rage = calc_age(G2c14, coll_yr))
+
+calc_Palk <- function(Alk, nitrate, salinity) {((Alk + nitrate)*35)/salinity}
+
+Atlantic_WOCE <- Atlantic_WOCE %>%
+  mutate(Palk = calc_Palk(G2talk, G2nitrate, G2salinity)) 
+
+Atlantic_WOCE <- Atlantic_WOCE %>%
+  mutate(Palk_mod = Palk - 2320)
+
+P_star <- function(phosphate, oxygen) {phosphate - 1.95 + (oxygen/170)}
+
+Atlantic_WOCE <- Atlantic_WOCE %>%
+  mutate(Pst = P_star(G2phosphate, G2oxygen))
+
+####end of routines to run before starting
+
 write_csv(Atlantic_WOCE, here("data/Atlantic_WOCE.csv"))
 
 Atlantic_AOU <- 
@@ -317,7 +345,8 @@ Atl_14C_SiO2_f <-
   theme_bw() + 
   geom_jitter(alpha = 1.0, size = 1) +
   geom_smooth(method = "lm") +
-  facet_wrap(facets = vars(expocode))
+  geom_abline(intercept=-70, slope=-1, linetype = 3) +
+  facet_wrap(facets = vars(expocode), nrow = 5)
 
 Atl_14C_SiO2_f
 
@@ -334,6 +363,7 @@ Atl_14C_SiO2_deep_f <-
   theme_bw() + 
   geom_jitter(alpha = 1.0, size = 1) +
   geom_smooth(method = "lm") +
+  geom_abline(intercept=-70, slope=-1, linetype = 3) +
   facet_wrap(facets = vars(expocode))
 
 Atl_14C_SiO2_deep_f
@@ -404,7 +434,7 @@ A16N_14C_Palk <-
   geom_smooth(method = "lm", col = "#E69F00" ) +
   geom_abline(intercept=-53, slope=-1, linetype = 1) 
 
-A16N_14C_Palk_reg <- A16N_14C_Palk + geom_text(x=75, y=100,label = lm_eqn(A16N_Palk), parse = TRUE)
+A16N_14C_Palk_reg <- A16N_14C_Palk + geom_text(x=0, y=-200,label = lm_eqn(A16N_Palk), parse = TRUE)
 
 A16N_14C_Palk_reg
 
@@ -493,3 +523,228 @@ A05_14C_Palk <-
 A05_14C_Palk_reg <- A05_14C_Palk + geom_text(x=75, y=100,label = lm_eqn(A05_Palk), parse = TRUE)
 
 A05_14C_Palk_reg
+
+##Start using PO4* instead of PO4
+
+P_star <- function(phosphate, oxygen) {phosphate - 1.95 + (oxygen/170)}
+
+Atlantic_WOCE <- Atlantic_WOCE %>%
+  mutate(Pst = P_star(G2phosphate, G2oxygen))
+
+Atl_PO4_star_f <-
+  ggplot(Atlantic_WOCE, aes(x = Pst, y = G2c13, group = expocode, shape=expocode, color=expocode)) +
+  scale_shape_manual(values=c(21:25)) +
+  scale_color_manual(values=cbbPalette) +
+  scale_fill_manual(values=cbbPalette) +
+  scale_x_continuous(name = "Phosphate_star") +
+  scale_y_continuous(name = "d13C, o/oo", breaks = seq(0.0,2.25, 0.25), limits = c(0.0, 2.25)) +
+  ggtitle("Atlantic  WOCE") +
+  theme_bw() + 
+  geom_jitter(alpha = 1.0, size = 1) +
+  facet_wrap(facets = vars(expocode))
+
+Atl_PO4_star_f
+
+##Calculate the fraction of northern and southern waters
+##Broecker et al 1991
+
+
+f_north <- function(pstar) {(1.67 - pstar)/0.94}
+
+Atlantic_WOCE <- Atlantic_WOCE %>%
+     mutate(f_n = f_north(Pst))
+
+Atlantic_WOCE_deep2 <- filter(Atlantic_WOCE, G2pressure > 2000)
+
+A_dum_f <-
+     ggplot(Atlantic_WOCE_deep2, aes(x=G2longitude, y = G2oxygen, group = expocode, shape=expocode, color=expocode )) +
+     theme_bw() + 
+     geom_jitter(alpha = 1.0, size = 1) +
+     facet_wrap(facets = vars(expocode))
+
+A_dum_f
+
+###try to calculate O2 utilization rate using Broecker's eqn
+
+del_oxy <- function(f_north, oxygen) {250 + 30*f_north - oxygen}
+del_radioc <- function(f_north, c14) {-1.58 +90*f_north - c14}
+
+Atlantic_WOCE <- Atlantic_WOCE %>%
+  mutate(O2_change = del_oxy(f_n, G2oxygen)) 
+Atlantic_WOCE <- Atlantic_WOCE %>%
+  mutate(C14_change = del_radioc(f_n, G2c14))
+
+###select data for deep samples and samples between 41N and 30S
+
+Atlantic_WOCE_deep2 <- filter(Atlantic_WOCE, (G2pressure > 2000) & (G2latitude < 41 & G2latitude > -30))
+
+###This selects the data I want but there are some samples from A22 that have
+###very low oxygen values relative to the rest of the cruise. Are these the
+###Caribbean values that Broecker referred to? They result in very high values
+###for the oxygen change value. Probably. Exclude them now. Need to confirm
+###but for now I will exclude after I calculate oxygen change. Now exclude the 
+###two points wiht very low oxygen and D14C change.
+
+Atlantic_WOCE_deep2 <- filter(Atlantic_WOCE, (G2pressure > 2000) & (G2latitude < 41 & G2latitude > -30) & (O2_change < 55) &(C14_change >100) & (G2longitude < -20)) 
+                                
+
+A_our_g <-
+  ggplot(Atlantic_WOCE_deep2, aes(x = C14_change, y = O2_change)) +
+  scale_shape_manual(values=c(21:25)) +
+  scale_color_manual(values=cbbPalette) +
+  scale_fill_manual(values=cbbPalette) +
+  scale_x_continuous(name = "D14C change, o/oo") +
+  scale_y_continuous(name = "O2 change, units") +
+  ggtitle("Atlantic  WOCE") +
+  theme_bw() + 
+  geom_jitter(alpha = 1.0, size = 1) +
+  geom_smooth(method = "lm")
+
+A_our_g
+
+A_our_deep_fit <- lm(O2_change ~ C14_change, data = Atlantic_WOCE_deep2)
+summary(A_our_deep_fit)
+  
+A_our_whp_g <-
+  ggplot(Atlantic_WOCE_deep2, aes(x = C14_change, y = O2_change, shape=expocode, color=expocode)) +
+  scale_shape_manual(values=c(21:25)) +
+  scale_color_manual(values=cbbPalette) +
+  scale_fill_manual(values=cbbPalette) +
+  scale_x_continuous(name = "D14C change, o/oo") +
+  scale_y_continuous(name = "O2 change, units") +
+  ggtitle("Atlantic  WOCE") +
+  theme_bw() + 
+  geom_jitter(alpha = 1.0, size = 1) 
+
+A_our_whp_g
+
+##Working with Palk again. Need to find what data points
+##are above the natural line and, for each cruise, what
+##depth this refers to. First get eqation for each leg.
+##then plot DI14xs vs depth (pressure) for each leg. 
+
+A16N_Palk <- filter(Atlantic_WOCE, expocode == "A16N")
+
+A16N_14C_Palk <-
+  ggplot(A16N_Palk, aes(x = (Palk_mod), y = G2c14)) +
+  scale_shape_manual(values=c(21:25)) +
+  scale_color_manual(values= cbbPalette) +
+  scale_fill_manual(values=cbbPalette) +
+  scale_x_continuous(name = "Palk - 2320", limits = c(-50,110)) +
+  scale_y_continuous(name = "D14C", limits = c(-225, 125)) +
+  ggtitle("A16N") +
+  theme_bw() + 
+  geom_jitter(alpha = 1.0, size = 1, col = "#E69F00") +
+  geom_smooth(method = "lm", col = "#E69F00" ) +
+  geom_abline(intercept=-53, slope=-1, linetype = 1) 
+
+A16N_14C_Palk_reg <- A16N_14C_Palk + geom_text(x=0, y=-200,label = lm_eqn(A16N_Palk), parse = TRUE)
+
+A16N_14C_Palk_reg
+
+A16N_Palk <- A16N_Palk %>%
+  mutate(DI14Cxs = 69 - 1.7*Palk_mod)
+
+A_dum_f <-
+  ggplot(A16N_Palk, aes(x=G2depth, y = DI14Cxs, color = G2latitude )) +
+  theme_bw() + 
+  geom_jitter(alpha = 1.0, size = 1) +
+  facet_wrap(facets = vars(expocode))
+
+A_dum_f
+
+##A20
+
+A20_Palk <- filter(Atlantic_WOCE, expocode == "A20")
+
+A20_14C_Palk <-
+  ggplot(A20_Palk, aes(x = (Palk_mod), y = G2c14)) +
+  scale_shape_manual(values=c(21:25)) +
+  scale_color_manual(values=cbbPalette) +
+  scale_fill_manual(values=cbbPalette) +
+  scale_x_continuous(name = "Palk - 2320", limits = c(-50,110)) +
+  scale_y_continuous(name = "D14C", limits = c(-225, 125)) +
+  ggtitle("A20") +
+  theme_bw() + 
+  geom_jitter(alpha = 1.0, size = 1, col = "#56B4E9") +
+  geom_smooth(method = "lm", col = "#56B4E9") +
+  geom_abline(intercept=-53, slope=-1, linetype = 1) 
+
+A20_14C_Palk_reg <- A20_14C_Palk + geom_text(x=75, y=100,label = lm_eqn(A20_Palk), parse = TRUE)
+
+A20_14C_Palk_reg
+
+A20_Palk <- A20_Palk %>%
+  mutate(DI14Cxs = 44 - 1.5*Palk_mod)
+
+A_dum_f <-
+  ggplot(A20_Palk, aes(x=G2depth, y = DI14Cxs, color = G2latitude )) +
+  theme_bw() + 
+  geom_jitter(alpha = 1.0, size = 1) +
+  facet_wrap(facets = vars(expocode))
+
+A_dum_f
+
+##A22
+
+A22_Palk <- filter(Atlantic_WOCE, expocode == "A22")
+
+A22_14C_Palk <-
+  ggplot(A22_Palk, aes(x = (Palk_mod), y = G2c14)) +
+  scale_shape_manual(values=c(21:25)) +
+  scale_color_manual(values=cbbPalette) +
+  scale_fill_manual(values=cbbPalette) +
+  scale_x_continuous(name = "Palk - 2320", limits = c(-50,110)) +
+  scale_y_continuous(name = "D14C", limits = c(-225, 125)) +
+  ggtitle("A22") +
+  theme_bw() + 
+  geom_jitter(alpha = 1.0, size = 1, col = "#56B4E9") +
+  geom_smooth(method = "lm", col = "#56B4E9") +
+  geom_abline(intercept=-53, slope=-1, linetype = 1) 
+
+A22_14C_Palk_reg <- A22_14C_Palk + geom_text(x=75, y=100,label = lm_eqn(A22_Palk), parse = TRUE)
+
+A22_14C_Palk_reg
+
+A22_Palk <- A22_Palk %>%
+  mutate(DI14Cxs = 57 - 1.6*Palk_mod)
+
+A_dum_f <-
+  ggplot(A22_Palk, aes(x=G2depth, y = DI14Cxs, color = G2latitude )) +
+  theme_bw() + 
+  geom_jitter(alpha = 1.0, size = 1) +
+  facet_wrap(facets = vars(expocode))
+
+A_dum_f
+
+##A05
+
+A05_Palk <- filter(Atlantic_WOCE, expocode == "A05")
+
+A05_14C_Palk <-
+  ggplot(A05_Palk, aes(x = (Palk_mod), y = G2c14)) +
+  scale_shape_manual(values=c(21:25)) +
+  scale_color_manual(values= cbbPalette) +
+  scale_fill_manual(values=cbbPalette) +
+  scale_x_continuous(name = "Palk - 2320", limits = c(-50,110)) +
+  scale_y_continuous(name = "D14C", limits = c(-225, 125)) +
+  ggtitle("A05") +
+  theme_bw() + 
+  geom_jitter(alpha = 1.0, size = 1, col = "#E69F00") +
+  geom_smooth(method = "lm", col = "#E69F00" ) +
+  geom_abline(intercept=-53, slope=-1, linetype = 1) 
+
+A05_14C_Palk_reg <- A05_14C_Palk + geom_text(x=0, y=-200,label = lm_eqn(A05_Palk), parse = TRUE)
+
+A05_14C_Palk_reg
+
+A05_Palk <- A05_Palk %>%
+  mutate(DI14Cxs = 55 - 1.9*Palk_mod)
+
+A_dum_f <-
+  ggplot(A05_Palk, aes(x=G2depth, y = DI14Cxs, color = G2longitude )) +
+  theme_bw() + 
+  geom_jitter(alpha = 1.0, size = 1) +
+  facet_wrap(facets = vars(expocode))
+
+A_dum_f
