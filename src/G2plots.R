@@ -583,13 +583,13 @@ Atlantic_WOCE_deep2 <- filter(Atlantic_WOCE, (G2pressure > 2000) & (G2latitude <
 ###Caribbean values that Broecker referred to? They result in very high values
 ###for the oxygen change value. Probably. Exclude them now. Need to confirm
 ###but for now I will exclude after I calculate oxygen change. Now exclude the 
-###two points wiht very low oxygen and D14C change.
+###two points with very low oxygen and D14C change.
 
 Atlantic_WOCE_deep2 <- filter(Atlantic_WOCE, (G2pressure > 2000) & (G2latitude < 41 & G2latitude > -30) & (O2_change < 55) &(C14_change >100) & (G2longitude < -20)) 
                                 
 
 A_our_g <-
-  ggplot(Atlantic_WOCE_deep2, aes(x = C14_change, y = O2_change)) +
+  ggplot(Atlantic_WOCE_deep2, aes(x = C14_change, y = O2_change, color = G2pressure)) +
   scale_shape_manual(values=c(21:25)) +
   scale_color_manual(values=cbbPalette) +
   scale_fill_manual(values=cbbPalette) +
@@ -748,3 +748,42 @@ A_dum_f <-
   facet_wrap(facets = vars(expocode))
 
 A_dum_f
+
+##Go back to looking at 14C and O2
+##Restrict to south of 41N and north of 30S )-30)
+##deeper than 200m
+##how to get rid of Caribbean results?
+
+f_north <- function(pstar) {(1.67 - pstar)/0.94}
+
+Atlantic_WOCE <- Atlantic_WOCE %>%
+  mutate(f_n = f_north(Pst))
+
+del_oxy <- function(f_north, oxygen) {250 + 30*f_north - oxygen}
+del_radioc <- function(f_north, c14) {-1.58 +90*f_north - c14}
+
+Atlantic_WOCE <- Atlantic_WOCE %>%
+  mutate(O2_change = del_oxy(f_n, G2oxygen)) 
+Atlantic_WOCE <- Atlantic_WOCE %>%
+  mutate(C14_change = del_radioc(f_n, G2c14))
+
+Atlantic_WOCE_deep2 <- filter(Atlantic_WOCE, (G2pressure > 2000) & (G2latitude < 41 & G2latitude > -30) & (O2_change < 55) &(C14_change >100)) 
+
+A_our_g <-
+  ggplot(Atlantic_WOCE_deep2, aes(x = C14_change, y = O2_change, color = G2longitude)) +
+  scale_x_continuous(name = "D14C change, o/oo") +
+  scale_y_continuous(name = "O2 change, units") +
+  ggtitle("Atlantic  WOCE") +
+  theme_bw() + 
+  geom_jitter(alpha = 1.0, size = 1) +
+  geom_smooth(method = "lm", col = "#E69F00" ) 
+
+A_our_g
+
+A_our_deep_fit <- lm(O2_change ~ C14_change, data = Atlantic_WOCE_deep2)
+summary(A_our_deep_fit)
+
+##Need to separate into east and west basins
+
+
+
