@@ -769,7 +769,7 @@ Atlantic_WOCE <- Atlantic_WOCE %>%
 
 Atlantic_WOCE_deep2 <- filter(Atlantic_WOCE, (G2pressure > 2000) & (G2latitude < 41 & G2latitude > -30) & (O2_change < 55) &(C14_change >100)) 
 
-A_our_g <-
+A_our_g <-  
   ggplot(Atlantic_WOCE_deep2, aes(x = C14_change, y = O2_change, color = G2longitude)) +
   scale_x_continuous(name = "D14C change, o/oo") +
   scale_y_continuous(name = "O2 change, units") +
