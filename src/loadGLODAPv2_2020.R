@@ -115,7 +115,7 @@ colspec <- cols(
 
 glodapv2 <- read_csv(here("data/GLODAPv2.2020_Merged_Master_File.csv"), 
                    col_types = colspec, 
-                   na = c("NA", "-9999"))
+                   na = c("NA", "-9999", "NaN"))
 expcodes <- read_delim(here("data/expocodes.txt"), 
                        delim = "\t", 
                        col_names = c("num", "cruise"))
