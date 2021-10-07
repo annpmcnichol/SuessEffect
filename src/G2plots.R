@@ -12,7 +12,7 @@ glodapv2_dic <- read_csv(here("data/glodapv2_dic.csv"))
 Atlantic_WOCE <- filter(glodapv2_dic, expocode %in% c("33MW19910711", "33MW19930704.1",
                           "316N19970717", "316N19970815", "33RO19980123")) 
 
-fill <- "#4271AE"
+fill <- "#4271AE"  
 line <- "#1F3552"
 
 cbbPalette <- c("#000000", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
