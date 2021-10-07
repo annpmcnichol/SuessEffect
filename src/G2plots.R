@@ -778,7 +778,7 @@ A_our_g <-
   geom_jitter(alpha = 1.0, size = 1) +
   geom_smooth(method = "lm", col = "#E69F00" ) 
 
-A_our_g
+A_our_g  
 
 A_our_deep_fit <- lm(O2_change ~ C14_change, data = Atlantic_WOCE_deep2)
 summary(A_our_deep_fit)
