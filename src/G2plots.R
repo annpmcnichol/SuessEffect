@@ -620,7 +620,7 @@ A_our_whp_g
 
 ##Working with Palk again. Need to find what data points
 ##are above the natural line and, for each cruise, what
-##depth this refers to. First get eqation for each leg.
+##depth this refers to. First get equation for each leg.
 ##then plot DI14xs vs depth (pressure) for each leg. 
 
 A16N_Palk <- filter(Atlantic_WOCE, expocode == "A16N")
@@ -751,7 +751,8 @@ A_dum_f
 
 ##Go back to looking at 14C and O2
 ##Restrict to south of 41N and north of 30S )-30)
-##deeper than 200m
+##deeper than 2000m
+##14Cxs < 0
 ##how to get rid of Caribbean results?
 
 f_north <- function(pstar) {(1.67 - pstar)/0.94}
